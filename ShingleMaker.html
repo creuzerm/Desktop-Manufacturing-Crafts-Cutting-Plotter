@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC Shingle Roof Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style the container div */
+        #svgPreviewContainer {
+            border: 1px solid #e5e7eb; /* gray-200 */
+            margin-top: 1rem;
+            width: 100%;
+            min-height: 100px; /* Ensure container has some height initially */
+            background-color: #f9fafb; /* gray-50 */
+            overflow: auto; /* Use auto scrollbars if content overflows */
+            border-radius: 0.375rem; /* rounded-md */
+            resize: vertical; /* Allow vertical resizing */
+        }
+        /* Style the SVG element *inside* the container */
+        #svgPreviewContainer svg {
+             display: block; /* Remove extra space below SVG */
+             width: 100%;   /* Make SVG fill container width */
+             height: auto;  /* Maintain aspect ratio */
+             max-height: none; /* Remove max-height, rely on container overflow/resize */
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #4b5563; /* gray-600 */
+        }
+        .input-group input {
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.5rem; /* p-2 */
+            border-width: 1px;
+            border-color: #d1d5db; /* gray-300 */
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: #374151; /* gray-700 */
+            margin-top: 0.25rem; /* mt-1 */
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* Ring effect */
+        }
+        /* Adjust grid for potentially 8 items */
+        @media (min-width: 768px) { /* md breakpoint */
+             #generatorForm {
+                 grid-template-columns: repeat(2, minmax(0, 1fr)); /* Keep 2 columns */
+             }
+        }
+         @media (min-width: 1024px) { /* lg breakpoint */
+             #generatorForm {
+                 grid-template-columns: repeat(4, minmax(0, 1fr)); /* Use 4 columns on larger screens */
+             }
+         }
+
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="container max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">CNC Shingle Roof Generator</h1>
+
+        <form id="generatorForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="input-group">
+                <label for="length" class="block text-sm font-semibold text-gray-700">Length (inches):</label>
+                <input type="number" id="length" value="7" min="0.1" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="shinglesPerInch" class="block text-sm font-semibold text-gray-700">Shingles per Inch:</label>
+                <input type="number" id="shinglesPerInch" value="4" min="0.1" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="shingleLength" class="block text-sm font-semibold text-gray-700">Shingle Length (inches):</label>
+                <input type="number" id="shingleLength" value="0.5" min="0.1" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="gap" class="block text-sm font-semibold text-gray-700">Gap (inches):</label>
+                <input type="number" id="gap" value="0.125" min="0" step="0.01" required>
+            </div>
+             <div class="input-group">
+                <label for="repeats" class="block text-sm font-semibold text-gray-700">Shingle Rows:</label>
+                <input type="number" id="repeats" value="10" min="1" step="1" required>
+            </div>
+            <div class="input-group">
+                <label for="jaggedPercent" class="block text-sm font-semibold text-gray-700">Jagged %:</label>
+                <input type="number" id="jaggedPercent" value="10" min="0" max="100" step="1" required>
+            </div>
+            <div class="input-group">
+                <label for="angle" class="block text-sm font-semibold text-gray-700">Angle (degrees):</label>
+                <input type="number" id="angle" value="5" min="-45" max="45" step="1" required>
+            </div>
+            <div class="input-group">
+                <label for="angledPercent" class="block text-sm font-semibold text-gray-700">Angled Shingle %:</label>
+                <input type="number" id="angledPercent" value="5" min="0" max="100" step="1" required>
+            </div>
+        </form>
+
+        <div id="svgPreviewContainer" class="mb-6">
+        </div>
+
+        <button id="downloadButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full">
+            Generate and Download SVG
+        </button>
+    </div>
+
+    <script>
+        // --- Constants ---
+        const MM_PER_INCH = 25.4;
+        const JAGGED_VARIATION_INCHES = 0.125;
+        const MARGIN_MM = 10;
+        const STROKE_WIDTH = 0.2;
+
+        // --- DOM Elements ---
+        const form = document.getElementById('generatorForm');
+        const lengthInput = document.getElementById('length');
+        const shinglesPerInchInput = document.getElementById('shinglesPerInch');
+        const shingleLengthInput = document.getElementById('shingleLength');
+        const gapInput = document.getElementById('gap');
+        const repeatsInput = document.getElementById('repeats');
+        const jaggedPercentInput = document.getElementById('jaggedPercent');
+        const angleInput = document.getElementById('angle');
+        const angledPercentInput = document.getElementById('angledPercent');
+        const svgPreviewContainer = document.getElementById('svgPreviewContainer');
+        const downloadButton = document.getElementById('downloadButton');
+
+        // --- Core Logic ---
+
+        /**
+         * Parses input values from the form.
+         * @returns {object|null} An object with parameters or null if validation fails.
+         */
+        function getGeneratorParams() {
+            // ... (validation logic remains the same) ...
+             const params = {
+                lengthInches: parseFloat(lengthInput.value),
+                shinglesPerInch: parseFloat(shinglesPerInchInput.value),
+                shingleLengthInches: parseFloat(shingleLengthInput.value),
+                gapInches: parseFloat(gapInput.value), // Read gap value
+                repeats: parseInt(repeatsInput.value, 10),
+                jaggedPercent: parseFloat(jaggedPercentInput.value),
+                angleDegrees: parseFloat(angleInput.value),
+                angledPercent: parseFloat(angledPercentInput.value)
+            };
+
+            // Basic validation
+            for (const key in params) {
+                // Check if the value is Not a Number
+                if (isNaN(params[key])) {
+                    console.error(`Invalid input for ${key}: Not a number`);
+                    alert(`Invalid input for ${key}. Please enter a valid number.`);
+                    return null;
+                }
+                // Check if required positive values are indeed positive
+                if (['lengthInches', 'shinglesPerInch', 'shingleLengthInches'].includes(key) && params[key] <= 0) {
+                     alert(`${key.replace('Inches','')} must be positive.`);
+                     return null;
+                }
+                 // Check if gap is non-negative
+                 if (key === 'gapInches' && params[key] < 0) {
+                     alert("Gap must be non-negative.");
+                     return null;
+                 }
+                 // Check if repeats is at least 1
+                 if (key === 'repeats' && params[key] < 1) {
+                     alert("Repeats must be at least 1.");
+                     return null;
+                 }
+            }
+            return params;
+        }
+
+        /**
+         * Generates the SVG content string and calculates dimensions.
+         * @param {object} params - Parameters from getGeneratorParams.
+         * @returns {object|null} An object { svgString, svgWidth, svgHeight } or null if params are invalid.
+         */
+        function generateSVGData(params) { // Renamed for clarity
+            if (!params) return null;
+
+            const {
+                lengthInches, shinglesPerInch, shingleLengthInches, gapInches,
+                repeats, jaggedPercent, angleDegrees, angledPercent
+            } = params;
+
+            // --- Calculations ---
+            const mainLineLengthMM = lengthInches * MM_PER_INCH;
+            const shingleLengthMM = shingleLengthInches * MM_PER_INCH;
+            const shingleSpacingMM = (1 / shinglesPerInch) * MM_PER_INCH;
+            const gapMM = gapInches * MM_PER_INCH;
+            const jaggedMM = JAGGED_VARIATION_INCHES * MM_PER_INCH;
+            const repeatGapMM = gapMM;
+
+            const contentWidth = mainLineLengthMM;
+            const singleRepeatTotalHeight = shingleLengthMM + gapMM;
+            const totalInterRepeatGapsHeight = (repeats > 1) ? (repeats - 1) * repeatGapMM : 0;
+            // Corrected contentHeight calculation: includes final gap for the bottom line position
+            const contentHeight = (singleRepeatTotalHeight * repeats) + totalInterRepeatGapsHeight;
+
+
+            // Final SVG dimensions including margin
+            const svgWidth = contentWidth + 2 * MARGIN_MM;
+            const svgHeight = contentHeight + gapMM + 2 * MARGIN_MM; // Add final gap and margins
+
+            // --- Generate SVG Line Elements ---
+            let svgLines = '';
+            // ... (SVG line generation logic remains the same) ...
+             for (let repeatIndex = 0; repeatIndex < repeats; repeatIndex++) {
+                 const currentRepeatBaseY = MARGIN_MM + repeatIndex * (singleRepeatTotalHeight + repeatGapMM);
+                 const shingleStartY = currentRepeatBaseY + gapMM;
+                 const shingleEndY = shingleStartY + shingleLengthMM;
+                 const midY = shingleStartY + shingleLengthMM / 2;
+
+                 // Main baseline
+                 svgLines += `<line x1="${MARGIN_MM}" y1="${currentRepeatBaseY}" x2="${contentWidth + MARGIN_MM}" y2="${currentRepeatBaseY}" />\n`;
+
+                 const numShingles = Math.floor(contentWidth / shingleSpacingMM) + 1;
+                 let angledCount = 0;
+                 const numAngledTarget = Math.ceil(numShingles * (angledPercent / 100));
+
+                 for (let i = 0; i < numShingles; i++) {
+                     const xPos = MARGIN_MM + i * shingleSpacingMM;
+                     // Vertical shingle line
+                     svgLines += `<line x1="${xPos}" y1="${shingleStartY}" x2="${xPos}" y2="${shingleEndY}" />\n`;
+                      // Horizontal connecting line
+                      if (i > 0) {
+                          const prevXPos = MARGIN_MM + (i - 1) * shingleSpacingMM;
+                           let jaggedOffset = 0;
+                           if (Math.random() * 100 < jaggedPercent) {
+                               jaggedOffset = (Math.random() - 0.5) * 2 * jaggedMM;
+                           }
+                           const currentMidY = midY + jaggedOffset;
+                           let angleToApply = 0;
+                           const remainingShingles = numShingles - i;
+                           const neededAngled = numAngledTarget - angledCount;
+                           if (neededAngled > 0 && remainingShingles > 0) {
+                               const probability = neededAngled / remainingShingles;
+                               const adjustedProbability = probability * 1.2;
+                               if (Math.random() < adjustedProbability) {
+                                   angleToApply = angleDegrees;
+                                   angledCount++;
+                               }
+                           }
+                           const rotationCenterX = (prevXPos + xPos) / 2;
+                           const rotationCenterY = currentMidY;
+                           svgLines += `<line x1="${prevXPos}" y1="${currentMidY}" x2="${xPos}" y2="${currentMidY}" transform="rotate(${angleToApply} ${rotationCenterX} ${rotationCenterY})"/>\n`;
+                      }
+                 }
+             }
+            // Final horizontal line
+            // Positioned at Top Margin + content height + final gap
+            const finalBaseLineY = MARGIN_MM + contentHeight + gapMM;
+            svgLines += `<line x1="${MARGIN_MM}" y1="${finalBaseLineY}" x2="${contentWidth + MARGIN_MM}" y2="${finalBaseLineY}" />\n`;
+
+
+            // --- Assemble SVG String ---
+            const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet">
+    <g stroke="black" stroke-width="${STROKE_WIDTH}" fill="none">
+        ${svgLines}
+    </g>
+</svg>`;
+
+            // Return object containing string and dimensions
+            return { svgString: svgContent, svgWidth, svgHeight };
+        }
+
+
+        /**
+         * Updates the SVG preview in the DOM container.
+         */
+        function updatePreview() {
+            const params = getGeneratorParams();
+            const svgData = generateSVGData(params); // Get the data object
+
+            if (svgData && svgData.svgString) {
+                svgPreviewContainer.innerHTML = svgData.svgString; // Use the string part
+            } else {
+                svgPreviewContainer.innerHTML = ''; // Clear preview on error
+            }
+        }
+
+        /**
+         * Triggers the download of the generated SVG file with dimension-based filename.
+         */
+        function downloadSVG() {
+            const params = getGeneratorParams();
+            const svgData = generateSVGData(params); // Get the data object
+
+            // Check if we got valid data and the SVG string
+            if (!svgData || !svgData.svgString) {
+                 alert("Cannot download: SVG generation failed or input is invalid.");
+                 return;
+            }
+
+            const { svgString, svgWidth, svgHeight } = svgData; // Destructure the object
+
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+
+            // Create filename using calculated dimensions (rounded to 1 decimal place)
+            const filename = `ShinglePattern_${(svgWidth / MM_PER_INCH).toFixed(2)}Wx${(svgHeight / MM_PER_INCH).toFixed(2)}H_in.svg`;
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+
+            a.click(); // Trigger download
+
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        // --- Event Listeners ---
+        form.addEventListener('input', updatePreview);
+        downloadButton.addEventListener('click', downloadSVG);
+
+        // --- Initial Generation ---
+        document.addEventListener('DOMContentLoaded', updatePreview);
+
+    </script>
+</body>
+</html>
