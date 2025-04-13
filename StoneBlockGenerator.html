@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Stone Wall Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #svgPreviewContainer {
+            border: 1px solid #e5e7eb;
+            margin-top: 1rem;
+            width: 100%;
+            min-height: 100px;
+            background-color: #f9fafb;
+            overflow: auto;
+            border-radius: 0.375rem;
+            resize: vertical;
+        }
+        #svgPreviewContainer svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: none;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .input-group input {
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            border-width: 1px;
+            border-color: #d1d5db;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: #374151;
+            margin-top: 0.25rem;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .advanced-settings {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .advanced-settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding-bottom: 0.5rem;
+        }
+
+        .advanced-settings-content {
+            display: none;
+            padding-top: 1rem;
+        }
+
+        .advanced-settings-content.expanded {
+            display: block;
+        }
+
+        .disclosure-icon {
+            width: 1rem;
+            height: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .disclosure-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        #seedInputGroup {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Added gap for spacing */
+        }
+
+        #seedInputGroup input {
+            flex: 1; /* Allow input to take up available space */
+            min-width: 100px; /* Ensure input doesn't get too small */
+        }
+
+        #randomizeSeedButton {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+
+        #randomizeSeedButton:hover {
+            background-color: #2563eb;
+        }
+
+    </style>
+    <script src="https://unpkg.com/d3@7"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="container max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Voronoi Stone Wall Generator</h1>
+        <form id="generatorForm" class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="input-group">
+                <label for="width" class="block text-sm font-semibold text-gray-700">Width (inches):</label>
+                <input type="number" id="width" value="8" min="0.1" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="height" class="block text-sm font-semibold text-gray-700">Height (inches):</label>
+                <input type="number" id="height" value="6" min="0.1" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="avgStoneSize" class="block text-sm font-semibold text-gray-700">Avg. Stone Size (inches):</label>
+                <input type="number" id="avgStoneSize" value="1" min="0.5" step="0.1" required>
+            </div>
+            <div class="input-group" id="seedInputGroup">
+                <label for="seed" class="block text-sm font-semibold text-gray-700">Pattern Seed:</label>
+                <input type="number" id="seed" value="1234" step="1" required>
+                <button id="randomizeSeedButton" type="button">Randomize</button>
+            </div>
+
+
+            <div class="col-span-full advanced-settings">
+                <div class="advanced-settings-header" id="advancedSettingsHeader">
+                    <span class="text-sm font-semibold text-gray-700">Advanced Settings</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="disclosure-icon">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="advanced-settings-content" id="advancedSettingsContent">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="input-group">
+                            <label for="lineThickness" class="block text-sm font-semibold text-gray-700">Line Thickness (inches):</label>
+                            <input type="number" id="lineThickness" value="0.01" min="0.001" step="0.001" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="jointThickness" class="block text-sm font-semibold text-gray-700">Joint Thickness (pixels):</label>
+                            <input type="number" id="jointThickness" value="2" min="0" step="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="irregularity" class="block text-sm font-semibold text-gray-700">Irregularity:</label>
+                            <input type="number" id="irregularity" value="0.3" min="0" max="1" step="0.1" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div id="svgPreviewContainer" class="mb-6">
+        </div>
+        <div class="flex justify-center">
+            <button id="downloadButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline">
+                Generate and Download SVG
+            </button>
+        </div>
+    </div>
+    <script>
+        const MM_PER_INCH = 25.4;
+
+        const form = document.getElementById('generatorForm');
+        const widthInput = document.getElementById('width');
+        const heightInput = document.getElementById('height');
+        const avgStoneSizeInput = document.getElementById('avgStoneSize');
+        const irregularityInput = document.getElementById('irregularity');
+        const lineThicknessInput = document.getElementById('lineThickness');
+        const seedInput = document.getElementById('seed');
+        const svgPreviewContainer = document.getElementById('svgPreviewContainer');
+        const downloadButton = document.getElementById('downloadButton');
+        const jointThicknessInput = document.getElementById('jointThickness');
+        const advancedSettingsHeader = document.getElementById('advancedSettingsHeader');
+        const advancedSettingsContent = document.getElementById('advancedSettingsContent');
+        const disclosureIcon = document.querySelector('.disclosure-icon');
+        const randomizeSeedButton = document.getElementById('randomizeSeedButton');
+
+
+        advancedSettingsHeader.addEventListener('click', () => {
+            advancedSettingsContent.classList.toggle('expanded');
+            disclosureIcon.classList.toggle('expanded');
+        });
+
+        randomizeSeedButton.addEventListener('click', () => {
+            seedInput.value = Math.floor(Math.random() * 100000);
+            generateVoronoiStoneWallSVG();
+        });
+
+
+
+        function mulberry32(a) {
+            return function() {
+                var t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ t >>> 15, t | 1);
+                t = t ^ t + Math.imul(t ^ t >>> 7, t | 61);
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+
+        function generateVoronoiStoneWallSVG() {
+            const widthInches = parseFloat(widthInput.value);
+            const heightInches = parseFloat(heightInput.value);
+            const avgStoneSizeInches = parseFloat(avgStoneSizeInput.value);
+            const irregularity = parseFloat(irregularityInput.value);
+            const lineThicknessInches = parseFloat(lineThicknessInput.value);
+            const seed = parseInt(seedInput.value);
+            const jointThickness = parseInt(jointThicknessInput.value);
+
+
+            const rand = mulberry32(seed);
+
+            const svgWidth = widthInches * MM_PER_INCH;
+            const svgHeight = heightInches * MM_PER_INCH;
+            const avgStoneSizeMM = avgStoneSizeInches * MM_PER_INCH;
+            const lineThicknessMM = lineThicknessInches * MM_PER_INCH;
+
+            const numStonesX = Math.ceil(widthInches / avgStoneSizeInches);
+            const numStonesY = Math.ceil(heightInches / avgStoneSizeInches);
+            const numPoints = numStonesX * numStonesY;
+
+            let points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const x = rand() * svgWidth;
+                const y = rand() * svgHeight;
+                points.push([x, y]);
+            }
+
+            const voronoi = d3.Delaunay.from(points).voronoi([0, 0, svgWidth, svgHeight]);
+            let pathData = '';
+
+            for (let i = 0; i < points.length; i++) {
+                const cell = voronoi.cellPolygon(i);
+                if (cell) {
+                     // Calculate cell centroid
+                    let centroidX = 0;
+                    let centroidY = 0;
+                    for (const [x, y] of cell) {
+                        centroidX += x;
+                        centroidY += y;
+                    }
+                    centroidX /= cell.length;
+                    centroidY /= cell.length;
+
+                    // Contracted cell path, relative to centroid
+                    let contractedCell = cell.map(([x, y]) => {
+                        const dx = x - centroidX;
+                        const dy = y - centroidY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < jointThickness) return [x, y];
+                        const newX = centroidX + dx * (1 - jointThickness / dist);
+                        const newY = centroidY + dy * (1 - jointThickness / dist);
+                        return [newX, newY];
+                    });
+
+
+
+                    let stonePath = `M${contractedCell[0][0].toFixed(2)},${contractedCell[0][1].toFixed(2)}`;
+                    for (let j = 1; j < contractedCell.length; j++) {
+                        const midX = (contractedCell[j][0] + contractedCell[j - 1][0]) / 2;
+                        const midY = (contractedCell[j][1] + contractedCell[j - 1][1]) / 2;
+                        const controlX = midX + (rand() - 0.5) * irregularity * avgStoneSizeMM * 0.5;
+                        const controlY = midY + (rand() - 0.5) * irregularity * avgStoneSizeMM * 0.5;
+
+                        stonePath += `Q${controlX.toFixed(2)},${controlY.toFixed(2)} ${contractedCell[j][0].toFixed(2)},${contractedCell[j][1].toFixed(2)}`;
+                    }
+                    stonePath += 'Z';
+                    pathData += stonePath;
+                }
+            }
+
+            const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet">
+                <path d="${pathData}" stroke="black" stroke-width="${lineThicknessMM.toFixed(2)}" fill="none" />
+            </svg>`;
+            svgPreviewContainer.innerHTML = svgContent;
+            return svgContent;
+        }
+
+        function downloadSVG() {
+            const svgString = generateVoronoiStoneWallSVG();
+             const widthInches = parseFloat(widthInput.value);
+            const heightInches = parseFloat(heightInput.value);
+
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `stone_wall_${widthInches}x${heightInches}_in.svg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        form.addEventListener('input', generateVoronoiStoneWallSVG);
+        downloadButton.addEventListener('click', downloadSVG);
+
+        document.addEventListener('DOMContentLoaded', generateVoronoiStoneWallSVG);
+    </script>
+</body>
+</html>
