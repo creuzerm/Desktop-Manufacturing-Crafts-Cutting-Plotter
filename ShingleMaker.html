@@ -10,29 +10,31 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Style the container div */
         #svgPreviewContainer {
             border: 1px solid #e5e7eb; /* gray-200 */
             margin-top: 1rem;
             width: 100%;
-            min-height: 100px; /* Ensure container has some height initially */
+            min-height: 300px;
             background-color: #f9fafb; /* gray-50 */
-            overflow: auto; /* Use auto scrollbars if content overflows */
+            overflow: auto;
             border-radius: 0.375rem; /* rounded-md */
-            resize: vertical; /* Allow vertical resizing */
+            resize: vertical;
         }
-        /* Style the SVG element *inside* the container */
         #svgPreviewContainer svg {
-             display: block; /* Remove extra space below SVG */
-             width: 100%;   /* Make SVG fill container width */
-             height: auto;  /* Maintain aspect ratio */
-             max-height: none; /* Remove max-height, rely on container overflow/resize */
+             display: block;
+             width: 100%;
+             height: auto;
+             max-height: none;
         }
         .input-group label {
             font-weight: 600;
             color: #4b5563; /* gray-600 */
+            display: block;
+            margin-bottom: 0.25rem;
         }
-        .input-group input {
+        .input-group input[type="number"],
+        .input-group input[type="checkbox"],
+        .input-group input[type="range"] {
             border-radius: 0.375rem; /* rounded-md */
             padding: 0.5rem; /* p-2 */
             border-width: 1px;
@@ -41,68 +43,244 @@
             box-sizing: border-box;
             font-size: 1rem;
             color: #374151; /* gray-700 */
-            margin-top: 0.25rem; /* mt-1 */
         }
-        .input-group input:focus {
+         .input-group input[type="number"]:focus,
+         .input-group input[type="range"]:focus {
             outline: none;
             border-color: #3b82f6; /* blue-500 */
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* Ring effect */
         }
-        /* Adjust grid for potentially 8 items */
-        @media (min-width: 768px) { /* md breakpoint */
-             #generatorForm {
-                 grid-template-columns: repeat(2, minmax(0, 1fr)); /* Keep 2 columns */
-             }
+        .input-group input[type="checkbox"] {
+             width: auto;
+             margin-right: 0.5rem;
         }
-         @media (min-width: 1024px) { /* lg breakpoint */
-             #generatorForm {
-                 grid-template-columns: repeat(4, minmax(0, 1fr)); /* Use 4 columns on larger screens */
+        .input-group.checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+         .input-group.checkbox-group label {
+             margin-bottom: 0;
+             font-weight: normal;
+             color: #374151; /* gray-700 */
+         }
+        /* Slider specific styles */
+        .input-group input[type="range"] {
+            padding: 0;
+            height: 0.5rem; /* h-2 */
+            cursor: pointer;
+            appearance: none;
+            background-color: #e5e7eb; /* gray-200 */
+            border-radius: 9999px; /* rounded-full */
+            margin-top: 0.5rem;
+        }
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 1rem; /* w-4 */
+            height: 1rem; /* h-4 */
+            background-color: #3b82f6; /* blue-500 */
+            border-radius: 9999px; /* rounded-full */
+            cursor: pointer;
+        }
+        .input-group input[type="range"]::-moz-range-thumb {
+            width: 1rem; /* w-4 */
+            height: 1rem; /* h-4 */
+            background-color: #3b82f6; /* blue-500 */
+            border-radius: 9999px; /* rounded-full */
+            cursor: pointer;
+            border: none;
+        }
+        /* Container for number input + slider */
+        .slider-input-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* gap-3 */
+        }
+        .slider-input-container input[type="number"] {
+            width: 5rem;
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .slider-input-container .value-display {
+            font-size: 0.875rem; /* text-sm */
+            color: #6b7280; /* gray-500 */
+            min-width: 2.5rem;
+            text-align: right;
+        }
+        /* Style for disabled inputs/groups */
+        .input-group.disabled,
+        input:disabled,
+        input[type="range"]:disabled::-webkit-slider-thumb,
+        input[type="range"]:disabled::-moz-range-thumb {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+         input[type="range"]:disabled::-webkit-slider-thumb {
+             background-color: #9ca3af; /* gray-400 */
+         }
+         input[type="range"]:disabled::-moz-range-thumb {
+             background-color: #9ca3af; /* gray-400 */
+         }
+         /* Advanced Settings Toggle Button */
+         #toggleAdvanced {
+            background: none;
+            border: none;
+            color: #3b82f6; /* blue-500 */
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+         }
+         #toggleAdvanced:hover {
+             text-decoration: underline;
+         }
+         /* Advanced Settings Container */
+         #advancedSettings {
+             border-top: 1px solid #e5e7eb; /* gray-200 */
+             padding-top: 1.5rem; /* pt-6 */
+             margin-top: 1rem; /* mt-4 */
+             /* Use grid for layout within advanced section */
+             display: grid;
+             grid-template-columns: repeat(1, minmax(0, 1fr)); /* Default to 1 column */
+             gap: 1.5rem; /* gap-6 */
+         }
+          /* Responsive grid for advanced settings */
+         @media (min-width: 640px) { /* sm breakpoint */
+             #advancedSettings {
+                 grid-template-columns: repeat(2, minmax(0, 1fr));
              }
+         }
+         @media (min-width: 1024px) { /* lg breakpoint */
+             #advancedSettings {
+                 grid-template-columns: repeat(3, minmax(0, 1fr));
+             }
+         }
+         /* Hide element visually but keep accessible */
+         .hidden-visually {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+         }
+         /* Standard Tailwind hidden class */
+         .hidden {
+            display: none;
          }
 
     </style>
 </head>
 <body class="bg-gray-100 p-6">
-    <div class="container max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
+    <div class="container max-w-7xl mx-auto bg-white shadow-md rounded-lg p-8">
         <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">CNC Shingle Roof Generator</h1>
 
-        <form id="generatorForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div class="input-group">
-                <label for="length" class="block text-sm font-semibold text-gray-700">Length (inches):</label>
-                <input type="number" id="length" value="7" min="0.1" step="0.1" required>
+        <form id="generatorForm" class="mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+                <div class="input-group">
+                    <label for="length" class="block text-sm font-semibold text-gray-700">Length (inches):</label>
+                    <input type="number" id="length" value="7" min="0.1" step="0.1" required>
+                </div>
+                <div class="input-group">
+                    <label for="shinglesPerInch" class="block text-sm font-semibold text-gray-700">Avg Shingles/Inch:</label>
+                    <input type="number" id="shinglesPerInch" value="4" min="0.1" step="0.1" required>
+                </div>
+                <div class="input-group">
+                    <label for="shingleLength" class="block text-sm font-semibold text-gray-700">Shingle Length (in):</label>
+                    <input type="number" id="shingleLength" value="0.5" min="0.1" step="0.1" required>
+                </div>
+                <div class="input-group">
+                    <label for="repeats" class="block text-sm font-semibold text-gray-700">Shingle Rows:</label>
+                    <input type="number" id="repeats" value="10" min="1" step="1" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="shinglesPerInch" class="block text-sm font-semibold text-gray-700">Shingles per Inch:</label>
-                <input type="number" id="shinglesPerInch" value="4" min="0.1" step="0.1" required>
-            </div>
-            <div class="input-group">
-                <label for="shingleLength" class="block text-sm font-semibold text-gray-700">Shingle Length (inches):</label>
-                <input type="number" id="shingleLength" value="0.5" min="0.1" step="0.1" required>
-            </div>
-            <div class="input-group">
-                <label for="gap" class="block text-sm font-semibold text-gray-700">Gap (inches):</label>
-                <input type="number" id="gap" value="0.125" min="0" step="0.1" required>
-            </div>
-             <div class="input-group">
-                <label for="repeats" class="block text-sm font-semibold text-gray-700">Shingle Rows:</label>
-                <input type="number" id="repeats" value="10" min="1" step="1" required>
-            </div>
-            <div class="input-group">
-                <label for="jaggedPercent" class="block text-sm font-semibold text-gray-700">Jagged %:</label>
-                <input type="number" id="jaggedPercent" value="10" min="0" max="100" step="1" required>
-            </div>
-            <div class="input-group">
-                <label for="angle" class="block text-sm font-semibold text-gray-700">Angle (degrees):</label>
-                <input type="number" id="angle" value="5" min="-45" max="45" step="1" required>
-            </div>
-            <div class="input-group">
-                <label for="angledPercent" class="block text-sm font-semibold text-gray-700">Angled Shingle %:</label>
-                <input type="number" id="angledPercent" value="5" min="0" max="100" step="1" required>
-            </div>
+
+            <details id="advancedSettings">
+                <summary id="toggleAdvanced" aria-expanded="false" aria-controls="advancedSettings">
+                    Advanced Settings <span class="arrow">▼</span>
+                </summary>
+                    <div class="input-group">
+                        <label for="gap" class="block text-sm font-semibold text-gray-700">Row Gap (inches):</label>
+                        <input type="number" id="gap" value="0.125" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="jaggedPercent" class="block text-sm font-semibold text-gray-700">Jagged %:</label>
+                        <div class="slider-input-container">
+                            <input type="number" id="jaggedPercent" value="10" min="0" max="100" step="1" required>
+                            <input type="range" id="jaggedPercentSlider" min="0" max="100" value="10" step="1">
+                            <span class="value-display" id="jaggedPercentValue">10%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="angle" class="block text-sm font-semibold text-gray-700">Angle (degrees):</label>
+                        <input type="number" id="angle" value="5" min="-45" max="45" step="1" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="angledPercent" class="block text-sm font-semibold text-gray-700">Angled Shingle %:</label>
+                        <div class="slider-input-container">
+                            <input type="number" id="angledPercent" value="5" min="0" max="100" step="1" required>
+                            <input type="range" id="angledPercentSlider" min="0" max="100" value="5" step="1">
+                            <span class="value-display" id="angledPercentValue">5%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="gapVariationPercent" class="block text-sm font-semibold text-gray-700">Gap Variation Mag %:</label>
+                        <div class="slider-input-container">
+                            <input type="number" id="gapVariationPercent" value="10" min="0" max="100" step="1" required>
+                            <input type="range" id="gapVariationPercentSlider" min="0" max="100" value="10" step="1">
+                            <span class="value-display" id="gapVariationPercentValue">10%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="gapVariationApplyPercent" class="block text-sm font-semibold text-gray-700">Gap Variation Apply %:</label>
+                        <div class="slider-input-container">
+                            <input type="number" id="gapVariationApplyPercent" value="10" min="0" max="100" step="1" required>
+                            <input type="range" id="gapVariationApplyPercentSlider" min="0" max="100" value="100" step="1">
+                            <span class="value-display" id="gapVariationApplyPercentValue">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group checkbox-group items-center pt-6 lg:col-span-1">
+                        <input type="checkbox" id="doubleLineEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                        <label for="doubleLineEnabled" class="ml-2 block text-sm text-gray-900">Enable Double Line</label>
+                    </div>
+
+                    <div class="input-group double-line-option">
+                        <label for="doubleLineGapInches" class="block text-sm font-semibold text-gray-700">Base Double Line Gap (in):</label>
+                        <input type="number" id="doubleLineGapInches" value="0.02" min="0.01" step="0.01" required disabled>
+                    </div>
+
+                    <div class="input-group double-line-option">
+                        <label for="doubleLineApplyPercent" class="block text-sm font-semibold text-gray-700">Double Line Apply %:</label>
+                        <div class="slider-input-container">
+                            <input type="number" id="doubleLineApplyPercent" value="10" min="0" max="100" step="1" required disabled>
+                            <input type="range" id="doubleLineApplyPercentSlider" min="0" max="100" value="100" step="1" disabled>
+                            <span class="value-display" id="doubleLineApplyPercentValue">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group double-line-option">
+                        <label for="doubleLineGapVariationPercent" class="block text-sm font-semibold text-gray-700">Double Line Gap Var %:</label>
+                        <div class="slider-input-container">
+                            <input type="number" id="doubleLineGapVariationPercent" value="10" min="0" max="100" step="1" required disabled>
+                            <input type="range" id="doubleLineGapVariationPercentSlider" min="0" max="100" value="0" step="1" disabled>
+                            <span class="value-display" id="doubleLineGapVariationPercentValue">0%</span>
+                        </div>
+                    </div>
+            </details>
         </form>
 
         <div id="svgPreviewContainer" class="mb-6">
-        </div>
+            </div>
 
         <button id="downloadButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full">
             Generate and Download SVG
@@ -115,215 +293,287 @@
         const JAGGED_VARIATION_INCHES = 0.125;
         const MARGIN_MM = 10;
         const STROKE_WIDTH = 0.2;
+        const MIN_SHINGLE_SPACING_FACTOR = 0.1;
+        const MIN_DOUBLE_LINE_GAP_FACTOR = 0.05;
 
         // --- DOM Elements ---
         const form = document.getElementById('generatorForm');
+        // Basic Inputs
         const lengthInput = document.getElementById('length');
         const shinglesPerInchInput = document.getElementById('shinglesPerInch');
         const shingleLengthInput = document.getElementById('shingleLength');
-        const gapInput = document.getElementById('gap');
         const repeatsInput = document.getElementById('repeats');
-        const jaggedPercentInput = document.getElementById('jaggedPercent');
+        // Advanced Inputs
+        const gapInput = document.getElementById('gap');
         const angleInput = document.getElementById('angle');
+        const jaggedPercentInput = document.getElementById('jaggedPercent');
         const angledPercentInput = document.getElementById('angledPercent');
+        const gapVariationPercentInput = document.getElementById('gapVariationPercent');
+        const gapVariationApplyPercentInput = document.getElementById('gapVariationApplyPercent');
+        const doubleLineEnabledInput = document.getElementById('doubleLineEnabled');
+        const doubleLineGapInchesInput = document.getElementById('doubleLineGapInches');
+        const doubleLineApplyPercentInput = document.getElementById('doubleLineApplyPercent');
+        const doubleLineGapVariationPercentInput = document.getElementById('doubleLineGapVariationPercent');
+        // UI Elements
         const svgPreviewContainer = document.getElementById('svgPreviewContainer');
         const downloadButton = document.getElementById('downloadButton');
+        const toggleAdvancedButton = document.getElementById('toggleAdvanced');
+        const advancedSettingsDiv = document.getElementById('advancedSettings');
+        const advancedToggleArrow = toggleAdvancedButton.querySelector('.arrow');
+
+        // --- Slider Synchronization Logic ---
+        const sliderConfigs = [
+            // Advanced Sliders
+            { numberId: 'jaggedPercent', sliderId: 'jaggedPercentSlider', displayId: 'jaggedPercentValue' },
+            { numberId: 'angledPercent', sliderId: 'angledPercentSlider', displayId: 'angledPercentValue' },
+            { numberId: 'gapVariationPercent', sliderId: 'gapVariationPercentSlider', displayId: 'gapVariationPercentValue' },
+            { numberId: 'gapVariationApplyPercent', sliderId: 'gapVariationApplyPercentSlider', displayId: 'gapVariationApplyPercentValue' },
+            { numberId: 'doubleLineApplyPercent', sliderId: 'doubleLineApplyPercentSlider', displayId: 'doubleLineApplyPercentValue' },
+            { numberId: 'doubleLineGapVariationPercent', sliderId: 'doubleLineGapVariationPercentSlider', displayId: 'doubleLineGapVariationPercentValue' }
+        ];
+
+        function syncSliderNumber(numberId, sliderId, displayId) {
+            const numberInput = document.getElementById(numberId);
+            const slider = document.getElementById(sliderId);
+            const display = document.getElementById(displayId);
+            if (!numberInput || !slider || !display) return;
+
+            const update = (source) => {
+                let value = parseFloat(source.value);
+                const min = parseFloat(numberInput.min);
+                const max = parseFloat(numberInput.max);
+                if (isNaN(value)) value = min;
+                value = Math.max(min, Math.min(max, value));
+
+                if (source.type === 'range') numberInput.value = value;
+                else slider.value = value;
+
+                display.textContent = `${Math.round(value)}%`;
+            };
+
+            slider.addEventListener('input', () => update(slider));
+            numberInput.addEventListener('input', () => update(numberInput));
+            numberInput.addEventListener('change', () => {
+                 let value = parseFloat(numberInput.value);
+                 const min = parseFloat(numberInput.min);
+                 const max = parseFloat(numberInput.max);
+                 if (isNaN(value)) value = min;
+                 value = Math.max(min, Math.min(max, value));
+                 numberInput.value = value;
+                 update(numberInput);
+                 updatePreview(); // Update on final change
+            });
+            update(numberInput); // Initial sync
+        }
 
         // --- Core Logic ---
-
-        /**
-         * Parses input values from the form.
-         * @returns {object|null} An object with parameters or null if validation fails.
-         */
         function getGeneratorParams() {
-            // ... (validation logic remains the same) ...
              const params = {
+                // Basic
                 lengthInches: parseFloat(lengthInput.value),
                 shinglesPerInch: parseFloat(shinglesPerInchInput.value),
                 shingleLengthInches: parseFloat(shingleLengthInput.value),
-                gapInches: parseFloat(gapInput.value), // Read gap value
                 repeats: parseInt(repeatsInput.value, 10),
-                jaggedPercent: parseFloat(jaggedPercentInput.value),
+                // Advanced
+                gapInches: parseFloat(gapInput.value),
                 angleDegrees: parseFloat(angleInput.value),
-                angledPercent: parseFloat(angledPercentInput.value)
+                jaggedPercent: parseFloat(jaggedPercentInput.value),
+                angledPercent: parseFloat(angledPercentInput.value),
+                gapVariationPercent: parseFloat(gapVariationPercentInput.value),
+                gapVariationApplyPercent: parseFloat(gapVariationApplyPercentInput.value),
+                doubleLineEnabled: doubleLineEnabledInput.checked,
+                doubleLineGapInches: parseFloat(doubleLineGapInchesInput.value),
+                doubleLineApplyPercent: parseFloat(doubleLineApplyPercentInput.value),
+                doubleLineGapVariationPercent: parseFloat(doubleLineGapVariationPercentInput.value)
             };
 
-            // Basic validation
+            // Validation (simplified as sync handles ranges, focus on criticals)
             for (const key in params) {
-                // Check if the value is Not a Number
-                if (isNaN(params[key])) {
-                    console.error(`Invalid input for ${key}: Not a number`);
-                    alert(`Invalid input for ${key}. Please enter a valid number.`);
-                    return null;
+                if (typeof params[key] !== 'boolean' && isNaN(params[key])) {
+                    // Allow percentage inputs to be briefly NaN during typing
+                     if (!key.toLowerCase().includes('percent')) {
+                         console.error(`Invalid input for ${key}: Not a number`);
+                         alert(`Invalid input for ${key}. Please enter a valid number.`);
+                         return null;
+                     }
                 }
-                // Check if required positive values are indeed positive
                 if (['lengthInches', 'shinglesPerInch', 'shingleLengthInches'].includes(key) && params[key] <= 0) {
-                     alert(`${key.replace('Inches','')} must be positive.`);
-                     return null;
+                     alert(`${key.replace('Inches','')} must be positive.`); return null;
                 }
-                 // Check if gap is non-negative
                  if (key === 'gapInches' && params[key] < 0) {
-                     alert("Gap must be non-negative.");
-                     return null;
+                     alert("Row Gap must be non-negative."); return null;
                  }
-                 // Check if repeats is at least 1
                  if (key === 'repeats' && params[key] < 1) {
-                     alert("Repeats must be at least 1.");
-                     return null;
+                     alert("Repeats must be at least 1."); return null;
+                 }
+                 if (key === 'doubleLineGapInches' && params.doubleLineEnabled && params[key] <= 0) {
+                     alert("Base Double Line Gap must be positive when enabled."); return null;
                  }
             }
+             // Belt-and-suspenders check for percentages (sync should handle this)
+              ['jaggedPercent', 'angledPercent', 'gapVariationPercent', 'gapVariationApplyPercent', 'doubleLineApplyPercent', 'doubleLineGapVariationPercent'].forEach(key => {
+                  if (params[key] < 0 || params[key] > 100) {
+                      console.warn(`${key} out of bounds (${params[key]}), clamping.`);
+                      const input = document.getElementById(key);
+                      if(input) input.value = Math.max(0, Math.min(100, params[key]));
+                      params[key] = parseFloat(input.value); // Update params object too
+                  }
+              });
             return params;
         }
 
-        /**
-         * Generates the SVG content string and calculates dimensions.
-         * @param {object} params - Parameters from getGeneratorParams.
-         * @returns {object|null} An object { svgString, svgWidth, svgHeight } or null if params are invalid.
-         */
-        function generateSVGData(params) { // Renamed for clarity
+        function generateSVGData(params) {
             if (!params) return null;
-
+            // Destructure params (same as before)
             const {
                 lengthInches, shinglesPerInch, shingleLengthInches, gapInches,
-                repeats, jaggedPercent, angleDegrees, angledPercent
+                repeats, jaggedPercent, angleDegrees, angledPercent,
+                gapVariationPercent, gapVariationApplyPercent,
+                doubleLineEnabled, doubleLineGapInches, doubleLineApplyPercent, doubleLineGapVariationPercent
             } = params;
 
-            // --- Calculations ---
+            // Calculations (same as before)
             const mainLineLengthMM = lengthInches * MM_PER_INCH;
             const shingleLengthMM = shingleLengthInches * MM_PER_INCH;
-            const shingleSpacingMM = (1 / shinglesPerInch) * MM_PER_INCH;
-            const gapMM = gapInches * MM_PER_INCH;
+            const baseShingleSpacingMM = (shinglesPerInch > 0) ? (1 / shinglesPerInch) * MM_PER_INCH : mainLineLengthMM;
+            const rowGapMM = gapInches * MM_PER_INCH;
             const jaggedMM = JAGGED_VARIATION_INCHES * MM_PER_INCH;
-            const repeatGapMM = gapMM;
-
+            const baseDoubleLineGapMM = doubleLineEnabled ? doubleLineGapInches * MM_PER_INCH : 0;
             const contentWidth = mainLineLengthMM;
-            const singleRepeatTotalHeight = shingleLengthMM + gapMM;
-            const totalInterRepeatGapsHeight = (repeats > 1) ? (repeats - 1) * repeatGapMM : 0;
-            // Corrected contentHeight calculation: includes final gap for the bottom line position
-            const contentHeight = (singleRepeatTotalHeight * repeats) + totalInterRepeatGapsHeight;
-
-
-            // Final SVG dimensions including margin
+            const singleRepeatHeight = shingleLengthMM + rowGapMM;
+            const contentHeight = singleRepeatHeight * repeats;
             const svgWidth = contentWidth + 2 * MARGIN_MM;
-            const svgHeight = contentHeight + gapMM + 2 * MARGIN_MM; // Add final gap and margins
+            const svgHeight = contentHeight + rowGapMM + 2 * MARGIN_MM;
 
-            // --- Generate SVG Line Elements ---
             let svgLines = '';
-            // ... (SVG line generation logic remains the same) ...
-             for (let repeatIndex = 0; repeatIndex < repeats; repeatIndex++) {
-                 const currentRepeatBaseY = MARGIN_MM + repeatIndex * (singleRepeatTotalHeight + repeatGapMM);
-                 const shingleStartY = currentRepeatBaseY + gapMM;
-                 const shingleEndY = shingleStartY + shingleLengthMM;
-                 const midY = shingleStartY + shingleLengthMM / 2;
+            // SVG Generation Loop (Identical to previous version)
+            for (let repeatIndex = 0; repeatIndex < repeats; repeatIndex++) {
+                const currentRepeatBaseY = MARGIN_MM + repeatIndex * singleRepeatHeight;
+                const shingleStartY = currentRepeatBaseY + rowGapMM;
+                const shingleEndY = shingleStartY + shingleLengthMM;
+                const midY = shingleStartY + shingleLengthMM / 2;
+                svgLines += `<line x1="${MARGIN_MM}" y1="${currentRepeatBaseY}" x2="${contentWidth + MARGIN_MM}" y2="${currentRepeatBaseY}" />\n`;
+                let currentX = MARGIN_MM, prevX = MARGIN_MM, isFirstShingle = true;
+                let angledCount = 0, shinglesDrawnInRow = 0;
+                const estimatedNumShingles = Math.max(1, Math.floor(contentWidth / baseShingleSpacingMM));
+                const numAngledTarget = Math.ceil(estimatedNumShingles * (angledPercent / 100));
 
-                 // Main baseline
-                 svgLines += `<line x1="${MARGIN_MM}" y1="${currentRepeatBaseY}" x2="${contentWidth + MARGIN_MM}" y2="${currentRepeatBaseY}" />\n`;
-
-                 const numShingles = Math.floor(contentWidth / shingleSpacingMM) + 1;
-                 let angledCount = 0;
-                 const numAngledTarget = Math.ceil(numShingles * (angledPercent / 100));
-
-                 for (let i = 0; i < numShingles; i++) {
-                     const xPos = MARGIN_MM + i * shingleSpacingMM;
-                     // Vertical shingle line
-                     svgLines += `<line x1="${xPos}" y1="${shingleStartY}" x2="${xPos}" y2="${shingleEndY}" />\n`;
-                      // Horizontal connecting line
-                      if (i > 0) {
-                          const prevXPos = MARGIN_MM + (i - 1) * shingleSpacingMM;
-                           let jaggedOffset = 0;
-                           if (Math.random() * 100 < jaggedPercent) {
-                               jaggedOffset = (Math.random() - 0.5) * 2 * jaggedMM;
-                           }
-                           const currentMidY = midY + jaggedOffset;
-                           let angleToApply = 0;
-                           const remainingShingles = numShingles - i;
-                           const neededAngled = numAngledTarget - angledCount;
-                           if (neededAngled > 0 && remainingShingles > 0) {
-                               const probability = neededAngled / remainingShingles;
-                               const adjustedProbability = probability * 1.2;
-                               if (Math.random() < adjustedProbability) {
-                                   angleToApply = angleDegrees;
-                                   angledCount++;
-                               }
-                           }
-                           const rotationCenterX = (prevXPos + xPos) / 2;
-                           const rotationCenterY = currentMidY;
-                           svgLines += `<line x1="${prevXPos}" y1="${currentMidY}" x2="${xPos}" y2="${currentMidY}" transform="rotate(${angleToApply} ${rotationCenterX} ${rotationCenterY})"/>\n`;
-                      }
-                 }
-             }
-            // Final horizontal line
-            // Positioned at Top Margin + content height + final gap
-            const finalBaseLineY = MARGIN_MM + contentHeight + gapMM;
+                while (currentX <= contentWidth + MARGIN_MM) {
+                    shinglesDrawnInRow++;
+                    // Draw Vertical Line(s)
+                    svgLines += `<line x1="${currentX}" y1="${shingleStartY}" x2="${currentX}" y2="${shingleEndY}" />\n`;
+                    if (doubleLineEnabled && baseDoubleLineGapMM > 0 && (Math.random() * 100 < doubleLineApplyPercent)) {
+                        let currentDoubleGapMM = baseDoubleLineGapMM;
+                        if (doubleLineGapVariationPercent > 0) {
+                            const variationAmount = (Math.random() - 0.5) * 2 * baseDoubleLineGapMM * (doubleLineGapVariationPercent / 100);
+                            currentDoubleGapMM += variationAmount;
+                            currentDoubleGapMM = Math.max(baseDoubleLineGapMM * MIN_DOUBLE_LINE_GAP_FACTOR, currentDoubleGapMM);
+                        }
+                        const secondLineX = currentX + currentDoubleGapMM;
+                        if (secondLineX <= contentWidth + MARGIN_MM + STROKE_WIDTH) {
+                             svgLines += `<line x1="${secondLineX}" y1="${shingleStartY}" x2="${secondLineX}" y2="${shingleEndY}" />\n`;
+                        }
+                    }
+                    // Draw Horizontal Line
+                    if (!isFirstShingle) {
+                        let jaggedOffset = (Math.random() * 100 < jaggedPercent) ? (Math.random() - 0.5) * 2 * jaggedMM : 0;
+                        const currentMidY = midY + jaggedOffset;
+                        let angleToApply = 0;
+                        const remainingShinglesEst = Math.max(1, estimatedNumShingles - shinglesDrawnInRow);
+                        const neededAngled = numAngledTarget - angledCount;
+                        if (angledPercent > 0 && neededAngled > 0 && (Math.random() < Math.min(1.0, (neededAngled / remainingShinglesEst) * 1.2))) {
+                            angleToApply = angleDegrees; angledCount++;
+                        }
+                        const rotationCenterX = (prevX + currentX) / 2, rotationCenterY = currentMidY;
+                        svgLines += `<line x1="${prevX}" y1="${currentMidY}" x2="${currentX}" y2="${currentMidY}" transform="rotate(${angleToApply} ${rotationCenterX} ${rotationCenterY})"/>\n`;
+                    }
+                    // Calculate Next Spacing
+                    let currentSpacingMM = baseShingleSpacingMM;
+                    if (gapVariationPercent > 0 && (Math.random() * 100 < gapVariationApplyPercent)) {
+                        const variationAmount = (Math.random() - 0.5) * 2 * baseShingleSpacingMM * (gapVariationPercent / 100);
+                        currentSpacingMM += variationAmount;
+                        currentSpacingMM = Math.max(baseShingleSpacingMM * MIN_SHINGLE_SPACING_FACTOR, currentSpacingMM);
+                    }
+                    prevX = currentX; currentX += currentSpacingMM; isFirstShingle = false;
+                    if (currentSpacingMM <= 0.01) { console.warn("Spacing too small, breaking."); break; }
+                }
+            }
+            const finalBaseLineY = MARGIN_MM + contentHeight + rowGapMM;
             svgLines += `<line x1="${MARGIN_MM}" y1="${finalBaseLineY}" x2="${contentWidth + MARGIN_MM}" y2="${finalBaseLineY}" />\n`;
 
-
-            // --- Assemble SVG String ---
             const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet">
     <g stroke="black" stroke-width="${STROKE_WIDTH}" fill="none">
         ${svgLines}
     </g>
 </svg>`;
-
-            // Return object containing string and dimensions
             return { svgString: svgContent, svgWidth, svgHeight };
         }
 
-
-        /**
-         * Updates the SVG preview in the DOM container.
-         */
         function updatePreview() {
             const params = getGeneratorParams();
-            const svgData = generateSVGData(params); // Get the data object
-
+            const svgData = generateSVGData(params);
             if (svgData && svgData.svgString) {
-                svgPreviewContainer.innerHTML = svgData.svgString; // Use the string part
+                svgPreviewContainer.innerHTML = svgData.svgString;
             } else {
-                svgPreviewContainer.innerHTML = ''; // Clear preview on error
+                svgPreviewContainer.innerHTML = '<p class="text-red-500 p-4">Error generating preview. Check input values.</p>';
             }
         }
 
-        /**
-         * Triggers the download of the generated SVG file with dimension-based filename.
-         */
         function downloadSVG() {
             const params = getGeneratorParams();
-            const svgData = generateSVGData(params); // Get the data object
-
-            // Check if we got valid data and the SVG string
+            const svgData = generateSVGData(params);
             if (!svgData || !svgData.svgString) {
-                 alert("Cannot download: SVG generation failed or input is invalid.");
-                 return;
+                 alert("Cannot download: SVG generation failed or input is invalid."); return;
             }
-
-            const { svgString, svgWidth, svgHeight } = svgData; // Destructure the object
-
+            const { svgString, svgWidth, svgHeight } = svgData;
             const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-
-            // Create filename using calculated dimensions (rounded to 1 decimal place)
             const filename = `ShinglePattern_${(svgWidth / MM_PER_INCH).toFixed(2)}Wx${(svgHeight / MM_PER_INCH).toFixed(2)}H_in.svg`;
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
+            a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+        }
 
-            a.click(); // Trigger download
+        function toggleDoubleLineOptions() {
+            const isDisabled = !doubleLineEnabledInput.checked;
+            const optionElements = document.querySelectorAll('.double-line-option input, .double-line-option span');
+            const optionGroups = document.querySelectorAll('.double-line-option');
 
-            // Clean up
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
+            optionElements.forEach(el => { if (el.tagName.toLowerCase() !== 'label') el.disabled = isDisabled; });
+            optionGroups.forEach(group => group.classList.toggle('disabled', isDisabled));
+            sliderConfigs.forEach(config => {
+                 if (config.numberId.startsWith('doubleLine')) {
+                     const slider = document.getElementById(config.sliderId);
+                     if (slider) slider.disabled = isDisabled;
+                 }
+             });
         }
 
         // --- Event Listeners ---
-        form.addEventListener('input', updatePreview);
+        form.addEventListener('input', (event) => {
+            // Update preview on any input change within the form
+            if (event.target.tagName === 'INPUT') {
+                updatePreview();
+            }
+        });
         downloadButton.addEventListener('click', downloadSVG);
+        doubleLineEnabledInput.addEventListener('change', () => {
+             toggleDoubleLineOptions();
+             updatePreview();
+        });
+        // Advanced Settings Toggle Listener
+        toggleAdvancedButton.addEventListener('click', () => {
+            const isExpanded = advancedSettingsDiv.classList.toggle('hidden');
+            toggleAdvancedButton.setAttribute('aria-expanded', !isExpanded);
+            advancedToggleArrow.textContent = isExpanded ? '▼' : '▲'; // Update arrow indicator
+        });
 
-        // --- Initial Generation ---
-        document.addEventListener('DOMContentLoaded', updatePreview);
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            sliderConfigs.forEach(config => syncSliderNumber(config.numberId, config.sliderId, config.displayId));
+            toggleDoubleLineOptions();
+            updatePreview();
+        });
 
     </script>
 </body>
