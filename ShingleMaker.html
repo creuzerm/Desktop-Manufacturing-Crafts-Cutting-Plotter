@@ -183,19 +183,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
                 <div class="input-group">
                     <label for="length" class="block text-sm font-semibold text-gray-700">Length (inches):</label>
-                    <input type="number" id="length" value="7" min="0.1" step="0.1" required>
+                    <input type="number" id="length" value="7" min="0.1" step="0.1" required title="Enter the length of the roof section in inches.">
                 </div>
                 <div class="input-group">
                     <label for="shinglesPerInch" class="block text-sm font-semibold text-gray-700">Avg Shingles/Inch:</label>
-                    <input type="number" id="shinglesPerInch" value="4" min="0.1" step="0.1" required>
+                    <input type="number" id="shinglesPerInch" value="4" min="0.1" step="0.1" required title="Enter the average number of shingles per inch.">
                 </div>
                 <div class="input-group">
                     <label for="shingleLength" class="block text-sm font-semibold text-gray-700">Shingle Length (in):</label>
-                    <input type="number" id="shingleLength" value="0.5" min="0.1" step="0.1" required>
+                    <input type="number" id="shingleLength" value="0.5" min="0.1" step="0.1" required title="Enter the length of a single shingle in inches.">
                 </div>
                 <div class="input-group">
                     <label for="repeats" class="block text-sm font-semibold text-gray-700">Shingle Rows:</label>
-                    <input type="number" id="repeats" value="10" min="1" step="1" required>
+                    <input type="number" id="repeats" value="10" min="1" step="1" required title="Enter the number of shingle rows to generate.">
                 </div>
             </div>
 
@@ -205,13 +205,13 @@
                 </summary>
                     <div class="input-group">
                         <label for="gap" class="block text-sm font-semibold text-gray-700">Row Gap (inches):</label>
-                        <input type="number" id="gap" value="0.125" min="0" step="0.01" required>
+                        <input type="number" id="gap" value="0.125" min="0" step="0.01" required title="Enter the gap between shingle rows in inches.">
                     </div>
 
                     <div class="input-group">
                         <label for="jaggedPercent" class="block text-sm font-semibold text-gray-700">Jagged %:</label>
                         <div class="slider-input-container">
-                            <input type="number" id="jaggedPercent" value="10" min="0" max="100" step="1" required>
+                            <input type="number" id="jaggedPercent" value="10" min="0" max="100" step="1" required title="Enter the percentage of jaggedness in the shingle edges.">
                             <input type="range" id="jaggedPercentSlider" min="0" max="100" value="10" step="1">
                             <span class="value-display" id="jaggedPercentValue">10%</span>
                         </div>
@@ -219,13 +219,13 @@
 
                     <div class="input-group">
                         <label for="angle" class="block text-sm font-semibold text-gray-700">Angle (degrees):</label>
-                        <input type="number" id="angle" value="5" min="-45" max="45" step="1" required>
+                        <input type="number" id="angle" value="5" min="-45" max="45" step="1" required title="Enter the angle of the shingles in degrees.">
                     </div>
 
                     <div class="input-group">
                         <label for="angledPercent" class="block text-sm font-semibold text-gray-700">Angled Shingle %:</label>
                         <div class="slider-input-container">
-                            <input type="number" id="angledPercent" value="5" min="0" max="100" step="1" required>
+                            <input type="number" id="angledPercent" value="5" min="0" max="100" step="1" required title="Enter the percentage of shingles that are angled.">
                             <input type="range" id="angledPercentSlider" min="0" max="100" value="5" step="1">
                             <span class="value-display" id="angledPercentValue">5%</span>
                         </div>
@@ -234,7 +234,7 @@
                     <div class="input-group">
                         <label for="gapVariationPercent" class="block text-sm font-semibold text-gray-700">Gap Variation Mag %:</label>
                         <div class="slider-input-container">
-                            <input type="number" id="gapVariationPercent" value="10" min="0" max="100" step="1" required>
+                            <input type="number" id="gapVariationPercent" value="10" min="0" max="100" step="1" required title="Enter the magnitude of gap variation as a percentage.">
                             <input type="range" id="gapVariationPercentSlider" min="0" max="100" value="10" step="1">
                             <span class="value-display" id="gapVariationPercentValue">10%</span>
                         </div>
@@ -243,26 +243,26 @@
                     <div class="input-group">
                         <label for="gapVariationApplyPercent" class="block text-sm font-semibold text-gray-700">Gap Variation Apply %:</label>
                         <div class="slider-input-container">
-                            <input type="number" id="gapVariationApplyPercent" value="10" min="0" max="100" step="1" required>
+                            <input type="number" id="gapVariationApplyPercent" value="10" min="0" max="100" step="1" required title="Enter the percentage of shingles to apply gap variation to.">
                             <input type="range" id="gapVariationApplyPercentSlider" min="0" max="100" value="100" step="1">
                             <span class="value-display" id="gapVariationApplyPercentValue">100%</span>
                         </div>
                     </div>
 
                     <div class="input-group checkbox-group items-center pt-6 lg:col-span-1">
-                        <input type="checkbox" id="doubleLineEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                        <input type="checkbox" id="doubleLineEnabled" class="form-checkbox h-5 w-5 text-blue-600" title="Enable double shingle lines.">
                         <label for="doubleLineEnabled" class="ml-2 block text-sm text-gray-900">Enable Double Line</label>
                     </div>
 
                     <div class="input-group double-line-option">
                         <label for="doubleLineGapInches" class="block text-sm font-semibold text-gray-700">Base Double Line Gap (in):</label>
-                        <input type="number" id="doubleLineGapInches" value="0.02" min="0.01" step="0.01" required disabled>
+                        <input type="number" id="doubleLineGapInches" value="0.02" min="0.01" step="0.01" required disabled title="Enter the base gap between the double shingle lines in inches.">
                     </div>
 
                     <div class="input-group double-line-option">
                         <label for="doubleLineApplyPercent" class="block text-sm font-semibold text-gray-700">Double Line Apply %:</label>
                         <div class="slider-input-container">
-                            <input type="number" id="doubleLineApplyPercent" value="10" min="0" max="100" step="1" required disabled>
+                            <input type="number" id="doubleLineApplyPercent" value="10" min="0" max="100" step="1" required disabled title="Enter the percentage of double lines to apply.">
                             <input type="range" id="doubleLineApplyPercentSlider" min="0" max="100" value="100" step="1" disabled>
                             <span class="value-display" id="doubleLineApplyPercentValue">100%</span>
                         </div>
@@ -271,7 +271,7 @@
                     <div class="input-group double-line-option">
                         <label for="doubleLineGapVariationPercent" class="block text-sm font-semibold text-gray-700">Double Line Gap Var %:</label>
                         <div class="slider-input-container">
-                            <input type="number" id="doubleLineGapVariationPercent" value="10" min="0" max="100" step="1" required disabled>
+                            <input type="number" id="doubleLineGapVariationPercent" value="10" min="0" max="100" step="1" required disabled title="Enter the percentage of variation in the double line gap.">
                             <input type="range" id="doubleLineGapVariationPercentSlider" min="0" max="100" value="0" step="1" disabled>
                             <span class="value-display" id="doubleLineGapVariationPercentValue">0%</span>
                         </div>
@@ -440,7 +440,7 @@
             const jaggedMM = JAGGED_VARIATION_INCHES * MM_PER_INCH;
             const baseDoubleLineGapMM = doubleLineEnabled ? doubleLineGapInches * MM_PER_INCH : 0;
             const contentWidth = mainLineLengthMM;
-            const singleRepeatHeight = shingleLengthMM + rowGapMM;
+            const singleRepeatHeight = shingleLengthMM + rowGapMM*2;
             const contentHeight = singleRepeatHeight * repeats;
             const svgWidth = contentWidth + 2 * MARGIN_MM;
             const svgHeight = contentHeight + rowGapMM + 2 * MARGIN_MM;
