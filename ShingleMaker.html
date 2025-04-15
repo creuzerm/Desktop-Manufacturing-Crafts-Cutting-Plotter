@@ -7,31 +7,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Basic styling for the body using Inter font */
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Styling for the SVG preview container */
         #svgPreviewContainer {
             border: 1px solid #e5e7eb; /* gray-200 */
             margin-top: 1rem;
             width: 100%;
             min-height: 300px;
             background-color: #f9fafb; /* gray-50 */
-            overflow: auto;
+            overflow: auto; /* Allow scrolling if SVG is large */
             border-radius: 0.375rem; /* rounded-md */
-            resize: vertical;
+            resize: vertical; /* Allow vertical resizing */
         }
+        /* Ensure SVG scales correctly within the container */
         #svgPreviewContainer svg {
              display: block;
              width: 100%;
              height: auto;
              max-height: none;
         }
+        /* Styling for input group labels */
         .input-group label {
             font-weight: 600;
             color: #4b5563; /* gray-600 */
             display: block;
             margin-bottom: 0.25rem;
         }
+        /* Styling for number, checkbox, and range inputs */
         .input-group input[type="number"],
         .input-group input[type="checkbox"],
         .input-group input[type="range"] {
@@ -44,20 +49,24 @@
             font-size: 1rem;
             color: #374151; /* gray-700 */
         }
+        /* Focus styles for number and range inputs */
          .input-group input[type="number"]:focus,
          .input-group input[type="range"]:focus {
             outline: none;
             border-color: #3b82f6; /* blue-500 */
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* Ring effect */
         }
+        /* Specific styling for checkboxes */
         .input-group input[type="checkbox"] {
              width: auto;
              margin-right: 0.5rem;
         }
+        /* Styling for checkbox groups */
         .input-group.checkbox-group {
             display: flex;
             align-items: center;
         }
+        /* Styling for labels within checkbox groups */
          .input-group.checkbox-group label {
              margin-bottom: 0;
              font-weight: normal;
@@ -73,6 +82,7 @@
             border-radius: 9999px; /* rounded-full */
             margin-top: 0.5rem;
         }
+        /* Slider thumb styles for Webkit browsers */
         .input-group input[type="range"]::-webkit-slider-thumb {
             appearance: none;
             width: 1rem; /* w-4 */
@@ -81,6 +91,7 @@
             border-radius: 9999px; /* rounded-full */
             cursor: pointer;
         }
+        /* Slider thumb styles for Firefox */
         .input-group input[type="range"]::-moz-range-thumb {
             width: 1rem; /* w-4 */
             height: 1rem; /* h-4 */
@@ -89,17 +100,19 @@
             cursor: pointer;
             border: none;
         }
-        /* Container for number input + slider */
+        /* Container for number input + slider combination */
         .slider-input-container {
             display: flex;
             align-items: center;
             gap: 0.75rem; /* gap-3 */
         }
+        /* Styling for the number input next to a slider */
         .slider-input-container input[type="number"] {
             width: 5rem;
             flex-shrink: 0;
             text-align: right;
         }
+        /* Styling for the value display next to a slider */
         .slider-input-container .value-display {
             font-size: 0.875rem; /* text-sm */
             color: #6b7280; /* gray-500 */
@@ -114,6 +127,7 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        /* Disabled slider thumb styles */
          input[type="range"]:disabled::-webkit-slider-thumb {
              background-color: #9ca3af; /* gray-400 */
          }
@@ -121,7 +135,7 @@
              background-color: #9ca3af; /* gray-400 */
          }
          /* Advanced Settings Toggle Button */
-         #toggleAdvanced {
+         #advancedSettings details > summary { /* Target the summary element directly */
             background: none;
             border: none;
             color: #3b82f6; /* blue-500 */
@@ -131,12 +145,23 @@
             margin-top: 1rem;
             margin-bottom: 0.5rem;
             display: inline-block;
+            list-style: none; /* Remove default marker */
+            width: 100%; /* Make it full width */
          }
-         #toggleAdvanced:hover {
+         #advancedSettings details > summary:hover {
              text-decoration: underline;
          }
+          #advancedSettings details > summary::before { /* Custom arrow */
+             content: '▼';
+             display: inline-block;
+             margin-right: 0.5rem;
+             transition: transform 0.2s ease-in-out;
+         }
+         #advancedSettings details[open] > summary::before {
+             transform: rotate(-180deg);
+         }
          /* Advanced Settings Container */
-         #advancedSettings {
+         #advancedSettings > div { /* Target the div holding the inputs */
              border-top: 1px solid #e5e7eb; /* gray-200 */
              padding-top: 1.5rem; /* pt-6 */
              margin-top: 1rem; /* mt-4 */
@@ -147,12 +172,12 @@
          }
           /* Responsive grid for advanced settings */
          @media (min-width: 640px) { /* sm breakpoint */
-             #advancedSettings {
+             #advancedSettings > div {
                  grid-template-columns: repeat(2, minmax(0, 1fr));
              }
          }
          @media (min-width: 1024px) { /* lg breakpoint */
-             #advancedSettings {
+             #advancedSettings > div {
                  grid-template-columns: repeat(3, minmax(0, 1fr));
              }
          }
@@ -168,11 +193,6 @@
             white-space: nowrap;
             border-width: 0;
          }
-         /* Standard Tailwind hidden class */
-         .hidden {
-            display: none;
-         }
-
     </style>
 </head>
 <body class="bg-gray-100 p-6">
@@ -186,24 +206,24 @@
                     <input type="number" id="length" value="7" min="0.1" step="0.1" required title="Enter the length of the shingle strips (width of image) in inches.">
                 </div>
                 <div class="input-group">
+                    <label for="repeats" id="repeatsLabel" class="block text-sm font-semibold text-gray-700">Rows:</label>
+                    <input type="number" id="repeats" value="10" min="1" step="1" required title="Enter the number rows of shingles (image height) to generate.">
+                </div>
+                <div class="input-group">
                     <label for="shinglesPerInch" class="block text-sm font-semibold text-gray-700">Avg Shingles/Inch:</label>
                     <input type="number" id="shinglesPerInch" value="4" min="0.1" step="0.1" required title="Enter the average number of shingles per inch.">
                 </div>
                 <div class="input-group">
                     <label for="shingleLength" class="block text-sm font-semibold text-gray-700">Shingle Length (in):</label>
-                    <input type="number" id="shingleLength" value="0.5" min="0.1" step="0.1" required title="Enter the length of a single shingle in inches.">
-                </div>
-                <div class="input-group">
-                    <label for="repeats" class="block text-sm font-semibold text-gray-700">Shingle Rows:</label>
-                    <input type="number" id="repeats" value="10" min="1" step="1" required title="Enter the number rows of shingles (image height) to generate.">
+                    <input type="number" id="shingleLength" value="0.25" min="0.1" step="0.1" required title="Enter the length of a single shingle in inches. The value used for generation will be double this amount.">
                 </div>
             </div>
 
             <details id="advancedSettings">
-                <summary id="toggleAdvanced" aria-expanded="false" aria-controls="advancedSettings">
-                    Advanced Settings <span class="arrow">▼</span>
+                <summary aria-expanded="false" aria-controls="advancedSettingsContent">
+                    Advanced Settings
                 </summary>
-                    <div class="input-group">
+                <div id="advancedSettingsContent"> <div class="input-group">
                         <label for="gap" class="block text-sm font-semibold text-gray-700">Row Gap (inches):</label>
                         <input type="number" id="gap" value="0.125" min="0" step="0.01" required title="Enter the gap between rows of shingles in inches.">
                     </div>
@@ -276,6 +296,7 @@
                             <span class="value-display" id="doubleLineGapVariationPercentValue">0%</span>
                         </div>
                     </div>
+                </div>
             </details>
         </form>
 
@@ -289,12 +310,12 @@
 
     <script>
         // --- Constants ---
-        const MM_PER_INCH = 25.4;
-        const JAGGED_VARIATION_INCHES = 0.125;
-        const MARGIN_MM = 10;
-        const STROKE_WIDTH = 0.2;
-        const MIN_SHINGLE_SPACING_FACTOR = 0.1;
-        const MIN_DOUBLE_LINE_GAP_FACTOR = 0.05;
+        const MM_PER_INCH = 25.4; // Conversion factor: millimeters per inch
+        const JAGGED_VARIATION_INCHES = 0.125; // Max variation for jagged edges
+        const MARGIN_MM = 10; // Margin around the SVG content
+        const STROKE_WIDTH = 0.2; // Stroke width for SVG lines
+        const MIN_SHINGLE_SPACING_FACTOR = 0.1; // Minimum allowed shingle spacing relative to base
+        const MIN_DOUBLE_LINE_GAP_FACTOR = 0.05; // Minimum allowed double line gap relative to base
 
         // --- DOM Elements ---
         const form = document.getElementById('generatorForm');
@@ -317,13 +338,13 @@
         // UI Elements
         const svgPreviewContainer = document.getElementById('svgPreviewContainer');
         const downloadButton = document.getElementById('downloadButton');
-        const toggleAdvancedButton = document.getElementById('toggleAdvanced');
-        const advancedSettingsDiv = document.getElementById('advancedSettings');
-        const advancedToggleArrow = toggleAdvancedButton.querySelector('.arrow');
+        const advancedSettingsDetails = document.getElementById('advancedSettings'); // The <details> element
+        // *** MODIFIED: Added repeatsLabel element ***
+        const repeatsLabel = document.getElementById('repeatsLabel');
 
         // --- Slider Synchronization Logic ---
+        // Configuration for linking number inputs with range sliders and value displays
         const sliderConfigs = [
-            // Advanced Sliders
             { numberId: 'jaggedPercent', sliderId: 'jaggedPercentSlider', displayId: 'jaggedPercentValue' },
             { numberId: 'angledPercent', sliderId: 'angledPercentSlider', displayId: 'angledPercentValue' },
             { numberId: 'gapVariationPercent', sliderId: 'gapVariationPercentSlider', displayId: 'gapVariationPercentValue' },
@@ -332,49 +353,79 @@
             { numberId: 'doubleLineGapVariationPercent', sliderId: 'doubleLineGapVariationPercentSlider', displayId: 'doubleLineGapVariationPercentValue' }
         ];
 
+        /**
+         * Synchronizes a number input, a range slider, and a text display.
+         * @param {string} numberId - The ID of the number input element.
+         * @param {string} sliderId - The ID of the range slider element.
+         * @param {string} displayId - The ID of the element displaying the value.
+         */
         function syncSliderNumber(numberId, sliderId, displayId) {
             const numberInput = document.getElementById(numberId);
             const slider = document.getElementById(sliderId);
             const display = document.getElementById(displayId);
-            if (!numberInput || !slider || !display) return;
+            if (!numberInput || !slider || !display) {
+                console.warn(`Slider sync elements not found for: ${numberId}, ${sliderId}, ${displayId}`);
+                return;
+            }
 
+            // Update function called when either input changes
             const update = (source) => {
                 let value = parseFloat(source.value);
                 const min = parseFloat(numberInput.min);
                 const max = parseFloat(numberInput.max);
+
+                // Handle potential NaN during typing, default to min
                 if (isNaN(value)) value = min;
+                // Clamp value within min/max bounds
                 value = Math.max(min, Math.min(max, value));
 
-                if (source.type === 'range') numberInput.value = value;
-                else slider.value = value;
+                // Update the other input element
+                if (source.type === 'range') {
+                    numberInput.value = value;
+                } else {
+                    slider.value = value;
+                }
 
+                // Update the display text (assuming percentage for these sliders)
                 display.textContent = `${Math.round(value)}%`;
             };
 
+            // Event listeners for slider and number input
             slider.addEventListener('input', () => update(slider));
             numberInput.addEventListener('input', () => update(numberInput));
+            // Add a 'change' listener to the number input for final validation/update
             numberInput.addEventListener('change', () => {
                  let value = parseFloat(numberInput.value);
                  const min = parseFloat(numberInput.min);
                  const max = parseFloat(numberInput.max);
                  if (isNaN(value)) value = min;
                  value = Math.max(min, Math.min(max, value));
+                 // Ensure the number input reflects the clamped value
                  numberInput.value = value;
+                 // Sync slider and display again
                  update(numberInput);
-                 updatePreview(); // Update on final change
+                 // Trigger preview update on final change
+                 updatePreview();
             });
-            update(numberInput); // Initial sync
+            // Initial synchronization on page load
+            update(numberInput);
         }
 
         // --- Core Logic ---
+
+        /**
+         * Retrieves and validates parameters from the form inputs.
+         * @returns {object|null} An object containing the generator parameters, or null if validation fails.
+         */
         function getGeneratorParams() {
              const params = {
-                // Basic
+                // Basic Parameters
                 lengthInches: parseFloat(lengthInput.value),
                 shinglesPerInch: parseFloat(shinglesPerInchInput.value),
-                shingleLengthInches: parseFloat(shingleLengthInput.value),
+                // *** NOTE: This value is doubled before use ***
+                shingleLengthInputVal: parseFloat(shingleLengthInput.value),
                 repeats: parseInt(repeatsInput.value, 10),
-                // Advanced
+                // Advanced Parameters
                 gapInches: parseFloat(gapInput.value),
                 angleDegrees: parseFloat(angleInput.value),
                 jaggedPercent: parseFloat(jaggedPercentInput.value),
@@ -387,193 +438,483 @@
                 doubleLineGapVariationPercent: parseFloat(doubleLineGapVariationPercentInput.value)
             };
 
-            // Validation (simplified as sync handles ranges, focus on criticals)
+             // Calculate the effective shingle length used in generation
+             params.shingleLengthInches = params.shingleLengthInputVal * 2;
+
+
+            // Basic Validation Checks
             for (const key in params) {
-                if (typeof params[key] !== 'boolean' && isNaN(params[key])) {
-                    // Allow percentage inputs to be briefly NaN during typing
+                // Skip boolean check
+                if (typeof params[key] === 'boolean') continue;
+                // Skip the input value we already processed
+                if (key === 'shingleLengthInputVal') continue;
+
+                // Check if the value is Not-a-Number
+                if (isNaN(params[key])) {
+                    // Allow percentage inputs to be temporarily NaN during typing
                      if (!key.toLowerCase().includes('percent')) {
                          console.error(`Invalid input for ${key}: Not a number`);
                          alert(`Invalid input for ${key}. Please enter a valid number.`);
-                         return null;
+                         // Focus the invalid input for user convenience
+                         const invalidInput = document.getElementById(key.replace('Inches', '').replace('Degrees', '').replace('Percent', ''));
+                         if (invalidInput) invalidInput.focus();
+                         return null; // Stop processing
                      }
                 }
+                // Check for non-positive values where required
                 if (['lengthInches', 'shinglesPerInch', 'shingleLengthInches'].includes(key) && params[key] <= 0) {
-                     alert(`${key.replace('Inches','')} must be positive.`); return null;
+                     // Use the input value for error message if it's the shingle length
+                     const errorKey = key === 'shingleLengthInches' ? 'shingleLengthInputVal' : key;
+                     alert(`${errorKey.replace('Inches','').replace('InputVal','')} must be positive.`);
+                     const invalidInput = document.getElementById(errorKey.replace('Inches', '').replace('InputVal',''));
+                     if (invalidInput) invalidInput.focus();
+                     return null;
                 }
+                // Check for negative gap
                  if (key === 'gapInches' && params[key] < 0) {
-                     alert("Row Gap must be non-negative."); return null;
+                     alert("Row Gap must be non-negative.");
+                     gapInput.focus();
+                     return null;
                  }
+                 // Check for non-positive repeats
                  if (key === 'repeats' && params[key] < 1) {
-                     alert("Repeats must be at least 1."); return null;
+                     alert("Shingle Rows must be at least 1.");
+                     repeatsInput.focus();
+                     return null;
                  }
+                 // Check for non-positive double line gap when enabled
                  if (key === 'doubleLineGapInches' && params.doubleLineEnabled && params[key] <= 0) {
-                     alert("Base Double Line Gap must be positive when enabled."); return null;
+                     alert("Base Double Line Gap must be positive when enabled.");
+                     doubleLineGapInchesInput.focus();
+                     return null;
                  }
             }
-             // Belt-and-suspenders check for percentages (sync should handle this)
+             // Additional check to ensure percentages are within 0-100 range (syncSliderNumber should handle this, but good as a backup)
               ['jaggedPercent', 'angledPercent', 'gapVariationPercent', 'gapVariationApplyPercent', 'doubleLineApplyPercent', 'doubleLineGapVariationPercent'].forEach(key => {
                   if (params[key] < 0 || params[key] > 100) {
                       console.warn(`${key} out of bounds (${params[key]}), clamping.`);
                       const input = document.getElementById(key);
-                      if(input) input.value = Math.max(0, Math.min(100, params[key]));
-                      params[key] = parseFloat(input.value); // Update params object too
+                      if(input) {
+                          const clampedValue = Math.max(0, Math.min(100, params[key]));
+                          input.value = clampedValue; // Update the input field visually
+                          params[key] = clampedValue; // Update the params object being returned
+                          // Re-sync the associated slider if it exists
+                          const config = sliderConfigs.find(c => c.numberId === key);
+                          if (config) {
+                              syncSliderNumber(config.numberId, config.sliderId, config.displayId);
+                          }
+                      }
                   }
               });
-            return params;
+            return params; // Return the validated (and potentially corrected) parameters
         }
 
+        /**
+         * Generates the SVG string based on the provided parameters.
+         * @param {object} params - The validated parameters object from getGeneratorParams.
+         * @returns {object|null} An object containing { svgString, svgWidth, svgHeight }, or null if params are invalid.
+         */
         function generateSVGData(params) {
-            if (!params) return null;
-            // Destructure params (same as before)
+            if (!params) return null; // Exit if parameters are invalid
+
+            // Destructure parameters for easier access
             const {
-                lengthInches, shinglesPerInch, shingleLengthInches, gapInches,
+                lengthInches, shinglesPerInch, shingleLengthInches, gapInches, // Note: shingleLengthInches is already doubled
                 repeats, jaggedPercent, angleDegrees, angledPercent,
                 gapVariationPercent, gapVariationApplyPercent,
                 doubleLineEnabled, doubleLineGapInches, doubleLineApplyPercent, doubleLineGapVariationPercent
             } = params;
 
-            // Calculations (same as before)
+            // --- Calculations ---
+            // Convert inches to millimeters
             const mainLineLengthMM = lengthInches * MM_PER_INCH;
-            const shingleLengthMM = shingleLengthInches * MM_PER_INCH;
-            const baseShingleSpacingMM = (shinglesPerInch > 0) ? (1 / shinglesPerInch) * MM_PER_INCH : mainLineLengthMM;
+            const shingleLengthMM = shingleLengthInches * MM_PER_INCH; // Use the already doubled value
+            const baseShingleSpacingMM = (shinglesPerInch > 0) ? (1 / shinglesPerInch) * MM_PER_INCH : mainLineLengthMM; // Avoid division by zero
             const rowGapMM = gapInches * MM_PER_INCH;
-            const jaggedMM = JAGGED_VARIATION_INCHES * MM_PER_INCH;
+            const jaggedMM = JAGGED_VARIATION_INCHES * MM_PER_INCH * (jaggedPercent / 100); // Scale jaggedness by percentage
             const baseDoubleLineGapMM = doubleLineEnabled ? doubleLineGapInches * MM_PER_INCH : 0;
+
+            // Calculate SVG dimensions
             const contentWidth = mainLineLengthMM;
-            const singleRepeatHeight = shingleLengthMM + rowGapMM*2;
+            // Height of a single row section (shingle + top/bottom gap)
+            const singleRepeatHeight = shingleLengthMM + rowGapMM * 2;
             const contentHeight = singleRepeatHeight * repeats;
             const svgWidth = contentWidth + 2 * MARGIN_MM;
+            // Total height includes all repeats, the final bottom gap, and top/bottom margins
             const svgHeight = contentHeight + rowGapMM + 2 * MARGIN_MM;
 
-            let svgLines = '';
-            // SVG Generation Loop (Identical to previous version)
+            let svgLines = ''; // String to accumulate SVG line elements
+
+            // --- SVG Generation Loop ---
             for (let repeatIndex = 0; repeatIndex < repeats; repeatIndex++) {
-                const currentRepeatBaseY = MARGIN_MM + repeatIndex * singleRepeatHeight;
-                const shingleStartY = currentRepeatBaseY + rowGapMM;
-                const shingleEndY = shingleStartY + shingleLengthMM;
-                const midY = shingleStartY + shingleLengthMM / 2;
+                // Calculate Y coordinates for the current row
+                const currentRepeatBaseY = MARGIN_MM + repeatIndex * singleRepeatHeight; // Top line of the row's area
+                const shingleStartY = currentRepeatBaseY + rowGapMM; // Top of the vertical shingle lines
+                const shingleEndY = shingleStartY + shingleLengthMM; // Bottom of the vertical shingle lines
+                const midY = shingleStartY + shingleLengthMM / 2; // Midpoint for horizontal lines
+
+                // Draw the top horizontal line for this row section
                 svgLines += `<line x1="${MARGIN_MM}" y1="${currentRepeatBaseY}" x2="${contentWidth + MARGIN_MM}" y2="${currentRepeatBaseY}" />\n`;
-                let currentX = MARGIN_MM, prevX = MARGIN_MM, isFirstShingle = true;
-                let angledCount = 0, shinglesDrawnInRow = 0;
+
+                let currentX = MARGIN_MM; // Starting X position for the first shingle line
+                let prevX = MARGIN_MM; // X position of the previous shingle line (for horizontal lines)
+                let isFirstShingle = true; // Flag for the first shingle in the row
+                let angledCount = 0; // Counter for angled shingles drawn in this row
+                let shinglesDrawnInRow = 0; // Counter for total shingles drawn in this row
+
+                // Estimate the number of shingles to help distribute angled ones more evenly
                 const estimatedNumShingles = Math.max(1, Math.floor(contentWidth / baseShingleSpacingMM));
                 const numAngledTarget = Math.ceil(estimatedNumShingles * (angledPercent / 100));
 
-                while (currentX <= contentWidth + MARGIN_MM) {
+                // Loop to draw shingles across the width of the row
+                while (currentX <= contentWidth + MARGIN_MM + STROKE_WIDTH) { // Add stroke width tolerance
                     shinglesDrawnInRow++;
-                    // Draw Vertical Line(s)
+
+                    // --- Draw Vertical Line(s) ---
                     svgLines += `<line x1="${currentX}" y1="${shingleStartY}" x2="${currentX}" y2="${shingleEndY}" />\n`;
+
+                    // Draw second vertical line if double lines are enabled and conditions met
                     if (doubleLineEnabled && baseDoubleLineGapMM > 0 && (Math.random() * 100 < doubleLineApplyPercent)) {
                         let currentDoubleGapMM = baseDoubleLineGapMM;
+                        // Apply variation to the double line gap if specified
                         if (doubleLineGapVariationPercent > 0) {
                             const variationAmount = (Math.random() - 0.5) * 2 * baseDoubleLineGapMM * (doubleLineGapVariationPercent / 100);
                             currentDoubleGapMM += variationAmount;
+                            // Ensure the gap doesn't become too small or negative
                             currentDoubleGapMM = Math.max(baseDoubleLineGapMM * MIN_DOUBLE_LINE_GAP_FACTOR, currentDoubleGapMM);
                         }
                         const secondLineX = currentX + currentDoubleGapMM;
+                        // Only draw the second line if it's within the SVG bounds
                         if (secondLineX <= contentWidth + MARGIN_MM + STROKE_WIDTH) {
                              svgLines += `<line x1="${secondLineX}" y1="${shingleStartY}" x2="${secondLineX}" y2="${shingleEndY}" />\n`;
                         }
                     }
-                    // Draw Horizontal Line
+
+                    // --- Draw Horizontal Line (between previous and current vertical lines) ---
                     if (!isFirstShingle) {
+                        // Calculate jaggedness offset for the horizontal line's Y position
                         let jaggedOffset = (Math.random() * 100 < jaggedPercent) ? (Math.random() - 0.5) * 2 * jaggedMM : 0;
                         const currentMidY = midY + jaggedOffset;
+
+                        // Determine if this horizontal line should be angled
                         let angleToApply = 0;
                         const remainingShinglesEst = Math.max(1, estimatedNumShingles - shinglesDrawnInRow);
                         const neededAngled = numAngledTarget - angledCount;
-                        if (angledPercent > 0 && neededAngled > 0 && (Math.random() < Math.min(1.0, (neededAngled / remainingShinglesEst) * 1.2))) {
-                            angleToApply = angleDegrees; angledCount++;
+                        // Probabilistic check to apply angle, more likely if neededAngled/remaining is high
+                        if (angledPercent > 0 && neededAngled > 0 && (Math.random() < Math.min(1.0, (neededAngled / remainingShinglesEst) * 1.2))) { // Bias towards adding needed angles
+                            angleToApply = angleDegrees;
+                            angledCount++;
                         }
-                        const rotationCenterX = (prevX + currentX) / 2, rotationCenterY = currentMidY;
+
+                        // Calculate rotation center for the angle
+                        const rotationCenterX = (prevX + currentX) / 2;
+                        const rotationCenterY = currentMidY;
+
+                        // Add the horizontal line with potential rotation
                         svgLines += `<line x1="${prevX}" y1="${currentMidY}" x2="${currentX}" y2="${currentMidY}" transform="rotate(${angleToApply} ${rotationCenterX} ${rotationCenterY})"/>\n`;
                     }
-                    // Calculate Next Spacing
+
+                    // --- Calculate Next Shingle Spacing ---
                     let currentSpacingMM = baseShingleSpacingMM;
+                    // Apply variation to the spacing if specified
                     if (gapVariationPercent > 0 && (Math.random() * 100 < gapVariationApplyPercent)) {
                         const variationAmount = (Math.random() - 0.5) * 2 * baseShingleSpacingMM * (gapVariationPercent / 100);
                         currentSpacingMM += variationAmount;
+                        // Ensure spacing doesn't become too small or negative
                         currentSpacingMM = Math.max(baseShingleSpacingMM * MIN_SHINGLE_SPACING_FACTOR, currentSpacingMM);
                     }
-                    prevX = currentX; currentX += currentSpacingMM; isFirstShingle = false;
-                    if (currentSpacingMM <= 0.01) { console.warn("Spacing too small, breaking."); break; }
+
+                    // Update positions for the next iteration
+                    prevX = currentX;
+                    currentX += currentSpacingMM;
+                    isFirstShingle = false; // No longer the first shingle
+
+                    // Safety break if spacing becomes effectively zero
+                    if (currentSpacingMM <= 0.01) {
+                        console.warn("Calculated shingle spacing is too small, breaking row generation to prevent infinite loop.");
+                        break;
+                    }
                 }
             }
-            const finalBaseLineY = MARGIN_MM + contentHeight + rowGapMM;
+
+            // Draw the final bottom horizontal line after all rows
+            const finalBaseLineY = MARGIN_MM + contentHeight;
             svgLines += `<line x1="${MARGIN_MM}" y1="${finalBaseLineY}" x2="${contentWidth + MARGIN_MM}" y2="${finalBaseLineY}" />\n`;
 
+            // Assemble the final SVG string
             const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet">
     <g stroke="black" stroke-width="${STROKE_WIDTH}" fill="none">
         ${svgLines}
     </g>
 </svg>`;
+            // Return the SVG string and its dimensions
             return { svgString: svgContent, svgWidth, svgHeight };
         }
 
+        // *** MODIFIED: Added function to update the repeats label ***
+        /**
+         * Updates the text of the 'Shingle Rows' label to include the calculated height.
+         */
+        function updateRepeatsLabel() {
+            const shingleLenVal = parseFloat(shingleLengthInput.value);
+            const gapVal = parseFloat(gapInput.value);
+            const repeatsVal = parseInt(repeatsInput.value, 10);
+
+            // Check if all required values are valid numbers
+            if (!isNaN(shingleLenVal) && !isNaN(gapVal) && !isNaN(repeatsVal) && repeatsVal >= 1 && shingleLenVal > 0 && gapVal >= 0) {
+                const doubledShingleLengthInches = shingleLenVal * 2;
+                // Calculate total height: (shingle height + 2 * gap) * repeats + final gap
+                const calculatedHeightInches = (doubledShingleLengthInches + gapVal * 2) * repeatsVal + gapVal;
+                repeatsLabel.textContent = `Rows: (Image height = ${calculatedHeightInches.toFixed(2)}")`;
+            } else {
+                // Reset to default text if inputs are invalid
+                repeatsLabel.textContent = 'Rows:';
+            }
+        }
+
+        /**
+         * Updates the SVG preview area and the repeats label with newly generated SVG data.
+         */
         function updatePreview() {
-            const params = getGeneratorParams();
-            const svgData = generateSVGData(params);
+            // *** MODIFIED: Call updateRepeatsLabel first ***
+            updateRepeatsLabel();
+
+            const params = getGeneratorParams(); // Get current parameters
+            const svgData = generateSVGData(params); // Generate SVG based on parameters
+
             if (svgData && svgData.svgString) {
+                // If generation is successful, display the SVG
                 svgPreviewContainer.innerHTML = svgData.svgString;
             } else {
+                // If generation fails (e.g., invalid input), show an error message
                 svgPreviewContainer.innerHTML = '<p class="text-red-500 p-4">Error generating preview. Check input values.</p>';
             }
         }
 
+        /**
+         * Triggers the download of the generated SVG file.
+         */
         function downloadSVG() {
-            const params = getGeneratorParams();
-            const svgData = generateSVGData(params);
+            const params = getGeneratorParams(); // Get current parameters
+            const svgData = generateSVGData(params); // Generate SVG
+
+            // Check if SVG generation was successful
             if (!svgData || !svgData.svgString) {
-                 alert("Cannot download: SVG generation failed or input is invalid."); return;
+                 // Use a more user-friendly modal/message box instead of alert
+                 showModal("Cannot download: SVG generation failed or input is invalid.");
+                 return; // Stop the download process
             }
+
             const { svgString, svgWidth, svgHeight } = svgData;
+
+            // Create a Blob containing the SVG data
             const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            // Create a temporary URL for the Blob
             const url = URL.createObjectURL(blob);
+
+            // Create a temporary anchor element for downloading
             const a = document.createElement('a');
+            // Generate a descriptive filename including dimensions in inches
             const filename = `ShinglePattern_${(svgWidth / MM_PER_INCH).toFixed(2)}Wx${(svgHeight / MM_PER_INCH).toFixed(2)}H_in.svg`;
-            a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+            a.href = url;
+            a.download = filename; // Set the download attribute
+
+            // Trigger the download
+            document.body.appendChild(a); // Append temporarily to the DOM
+            a.click(); // Simulate a click
+
+            // Clean up the temporary elements and URL
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url); // Free up memory
+            }, 100); // Short delay ensures download starts
         }
 
+        /**
+         * Toggles the enabled/disabled state and visual style of double line options
+         * based on the 'Enable Double Line' checkbox.
+         */
         function toggleDoubleLineOptions() {
             const isDisabled = !doubleLineEnabledInput.checked;
+            // Select all input/span elements within the double-line-option groups
             const optionElements = document.querySelectorAll('.double-line-option input, .double-line-option span');
+            // Select the container divs for styling
             const optionGroups = document.querySelectorAll('.double-line-option');
 
-            optionElements.forEach(el => { if (el.tagName.toLowerCase() !== 'label') el.disabled = isDisabled; });
+            // Enable/disable input elements (excluding labels)
+            optionElements.forEach(el => {
+                if (el.tagName.toLowerCase() !== 'label') {
+                    el.disabled = isDisabled;
+                }
+            });
+            // Add/remove 'disabled' class for visual styling (opacity, cursor)
             optionGroups.forEach(group => group.classList.toggle('disabled', isDisabled));
+
+            // Specifically disable/enable the associated range sliders
             sliderConfigs.forEach(config => {
                  if (config.numberId.startsWith('doubleLine')) {
                      const slider = document.getElementById(config.sliderId);
-                     if (slider) slider.disabled = isDisabled;
+                     if (slider) {
+                        slider.disabled = isDisabled;
+                     }
                  }
              });
         }
 
         // --- Event Listeners ---
+
+        // Update preview dynamically on any input change within the form
         form.addEventListener('input', (event) => {
-            // Update preview on any input change within the form
+            // Check if the event target is an input element
             if (event.target.tagName === 'INPUT') {
-                updatePreview();
+                // Avoid triggering preview update from sliders while dragging (use 'change' for final value)
+                 // Also, trigger preview if relevant inputs for height calculation change
+                if (event.target.type !== 'range' || ['shingleLength', 'repeats', 'gap'].includes(event.target.id)) {
+                    updatePreview();
+                }
             }
         });
-        downloadButton.addEventListener('click', downloadSVG);
-        doubleLineEnabledInput.addEventListener('change', () => {
-             toggleDoubleLineOptions();
-             updatePreview();
+        // Add 'change' listener specifically for range sliders to update preview on release
+        form.addEventListener('change', (event) => {
+             if (event.target.type === 'range') {
+                 updatePreview();
+             }
         });
-        // Advanced Settings Toggle Listener
-        toggleAdvancedButton.addEventListener('click', () => {
-            const isExpanded = advancedSettingsDiv.classList.toggle('hidden');
-            toggleAdvancedButton.setAttribute('aria-expanded', !isExpanded);
-            advancedToggleArrow.textContent = isExpanded ? '▼' : '▲'; // Update arrow indicator
+
+
+        // Listener for the download button
+        downloadButton.addEventListener('click', downloadSVG);
+
+        // Listener for the 'Enable Double Line' checkbox
+        doubleLineEnabledInput.addEventListener('change', () => {
+             toggleDoubleLineOptions(); // Update enabled state of related options
+             updatePreview(); // Refresh preview with new setting
         });
 
         // --- Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize synchronization for all configured sliders
             sliderConfigs.forEach(config => syncSliderNumber(config.numberId, config.sliderId, config.displayId));
+            // Set initial state of double line options based on checkbox default
             toggleDoubleLineOptions();
+            // Generate the initial preview and update the repeats label
             updatePreview();
         });
+
+        // --- Utility: Simple Modal for Messages (Replaces alert) ---
+        function showModal(message) {
+            // Remove existing modal first
+            const existingModal = document.getElementById('infoModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Create modal elements
+            const modal = document.createElement('div');
+            modal.id = 'infoModal';
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="relative mx-auto p-5 border w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+                    <div class="mt-3 text-center">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Information</h3>
+                        <div class="mt-2 px-7 py-3">
+                            <p class="text-sm text-gray-500">${message}</p>
+                        </div>
+                        <div class="items-center px-4 py-3">
+                            <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Add event listener to close button
+            document.getElementById('closeModalButton').addEventListener('click', () => {
+                modal.remove();
+            });
+
+             // Close modal if clicking outside the content area
+             modal.addEventListener('click', (event) => {
+                 if (event.target === modal) {
+                     modal.remove();
+                 }
+             });
+        }
+
+        // Replace alert calls in getGeneratorParams
+        function getGeneratorParams() {
+             const params = {
+                lengthInches: parseFloat(lengthInput.value),
+                shinglesPerInch: parseFloat(shinglesPerInchInput.value),
+                shingleLengthInputVal: parseFloat(shingleLengthInput.value),
+                repeats: parseInt(repeatsInput.value, 10),
+                gapInches: parseFloat(gapInput.value),
+                angleDegrees: parseFloat(angleInput.value),
+                jaggedPercent: parseFloat(jaggedPercentInput.value),
+                angledPercent: parseFloat(angledPercentInput.value),
+                gapVariationPercent: parseFloat(gapVariationPercentInput.value),
+                gapVariationApplyPercent: parseFloat(gapVariationApplyPercentInput.value),
+                doubleLineEnabled: doubleLineEnabledInput.checked,
+                doubleLineGapInches: parseFloat(doubleLineGapInchesInput.value),
+                doubleLineApplyPercent: parseFloat(doubleLineApplyPercentInput.value),
+                doubleLineGapVariationPercent: parseFloat(doubleLineGapVariationPercentInput.value)
+            };
+             params.shingleLengthInches = params.shingleLengthInputVal * 2;
+
+            for (const key in params) {
+                if (typeof params[key] === 'boolean' || key === 'shingleLengthInputVal') continue;
+
+                if (isNaN(params[key])) {
+                     if (!key.toLowerCase().includes('percent')) {
+                         console.error(`Invalid input for ${key}: Not a number`);
+                         showModal(`Invalid input for ${key}. Please enter a valid number.`); // Use modal
+                         const invalidInput = document.getElementById(key.replace('Inches', '').replace('Degrees', '').replace('Percent', ''));
+                         if (invalidInput) invalidInput.focus();
+                         return null;
+                     }
+                }
+                if (['lengthInches', 'shinglesPerInch', 'shingleLengthInches'].includes(key) && params[key] <= 0) {
+                     const errorKey = key === 'shingleLengthInches' ? 'shingleLengthInputVal' : key;
+                     showModal(`${errorKey.replace('Inches','').replace('InputVal','')} must be positive.`); // Use modal
+                     const invalidInput = document.getElementById(errorKey.replace('Inches', '').replace('InputVal',''));
+                     if (invalidInput) invalidInput.focus();
+                     return null;
+                }
+                 if (key === 'gapInches' && params[key] < 0) {
+                     showModal("Row Gap must be non-negative."); // Use modal
+                     gapInput.focus();
+                     return null;
+                 }
+                 if (key === 'repeats' && params[key] < 1) {
+                     showModal("Shingle Rows must be at least 1."); // Use modal
+                     repeatsInput.focus();
+                     return null;
+                 }
+                 if (key === 'doubleLineGapInches' && params.doubleLineEnabled && params[key] <= 0) {
+                     showModal("Base Double Line Gap must be positive when enabled."); // Use modal
+                     doubleLineGapInchesInput.focus();
+                     return null;
+                 }
+            }
+             ['jaggedPercent', 'angledPercent', 'gapVariationPercent', 'gapVariationApplyPercent', 'doubleLineApplyPercent', 'doubleLineGapVariationPercent'].forEach(key => {
+                  if (params[key] < 0 || params[key] > 100) {
+                      console.warn(`${key} out of bounds (${params[key]}), clamping.`);
+                      const input = document.getElementById(key);
+                      if(input) {
+                          const clampedValue = Math.max(0, Math.min(100, params[key]));
+                          input.value = clampedValue;
+                          params[key] = clampedValue;
+                          const config = sliderConfigs.find(c => c.numberId === key);
+                          if (config) {
+                              syncSliderNumber(config.numberId, config.sliderId, config.displayId);
+                          }
+                      }
+                  }
+              });
+            return params;
+        }
 
     </script>
 </body>
