@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNC Shingle Roof Generator</title>
+    <title>.SVG File Model Roof Shingle Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -177,13 +177,13 @@
 </head>
 <body class="bg-gray-100 p-6">
     <div class="container max-w-7xl mx-auto bg-white shadow-md rounded-lg p-8">
-        <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">CNC Shingle Roof Generator</h1>
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">.SVG File Model Roof Shingle Generator</h1>
 
         <form id="generatorForm" class="mb-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
                 <div class="input-group">
                     <label for="length" class="block text-sm font-semibold text-gray-700">Length (inches):</label>
-                    <input type="number" id="length" value="7" min="0.1" step="0.1" required title="Enter the length of the roof section in inches.">
+                    <input type="number" id="length" value="7" min="0.1" step="0.1" required title="Enter the length of the shingle strips (width of image) in inches.">
                 </div>
                 <div class="input-group">
                     <label for="shinglesPerInch" class="block text-sm font-semibold text-gray-700">Avg Shingles/Inch:</label>
@@ -195,7 +195,7 @@
                 </div>
                 <div class="input-group">
                     <label for="repeats" class="block text-sm font-semibold text-gray-700">Shingle Rows:</label>
-                    <input type="number" id="repeats" value="10" min="1" step="1" required title="Enter the number of shingle rows to generate.">
+                    <input type="number" id="repeats" value="10" min="1" step="1" required title="Enter the number rows of shingles (image height) to generate.">
                 </div>
             </div>
 
@@ -205,7 +205,7 @@
                 </summary>
                     <div class="input-group">
                         <label for="gap" class="block text-sm font-semibold text-gray-700">Row Gap (inches):</label>
-                        <input type="number" id="gap" value="0.125" min="0" step="0.01" required title="Enter the gap between shingle rows in inches.">
+                        <input type="number" id="gap" value="0.125" min="0" step="0.01" required title="Enter the gap between rows of shingles in inches.">
                     </div>
 
                     <div class="input-group">
