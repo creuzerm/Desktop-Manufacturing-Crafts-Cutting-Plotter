@@ -256,14 +256,29 @@ class KirigamiSVGGenerator {
         }
       }
 
-      // Horizontal cuts along horizontal grid lines
-      for (let r = 0; r <= rows; r++) {
-        const y = offsetY + r * this.tileSize;
-        for (let c = 0; c < cols; c++) {
-          const xStartSegment = offsetX + c * this.tileSize + wHinge;
-          const xEndSegment = offsetX + (c + 1) * this.tileSize - wHinge;
-          if (xEndSegment > xStartSegment) {
-            cutPathCommands.push(`M ${xStartSegment.toFixed(3)},${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+      // Horizontal grid lines r = 0 ... rows:
+      // If 3D Pop-Up creases are enabled (this.generateCreases), these horizontal lines are SCORES (creasePathCommands)
+      // If 3D Pop-Up creases are NOT enabled, these horizontal lines are CUTS (cutPathCommands)
+      if (this.generateCreases) {
+        for (let r = 0; r <= rows; r++) {
+          const y = offsetY + r * this.tileSize;
+          for (let c = 0; c < cols; c++) {
+            const xStartSegment = offsetX + c * this.tileSize + wHinge;
+            const xEndSegment = offsetX + (c + 1) * this.tileSize - wHinge;
+            if (xEndSegment > xStartSegment) {
+              creasePathCommands.push(`M ${xStartSegment.toFixed(3)},${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+            }
+          }
+        }
+      } else {
+        for (let r = 0; r <= rows; r++) {
+          const y = offsetY + r * this.tileSize;
+          for (let c = 0; c < cols; c++) {
+            const xStartSegment = offsetX + c * this.tileSize + wHinge;
+            const xEndSegment = offsetX + (c + 1) * this.tileSize - wHinge;
+            if (xEndSegment > xStartSegment) {
+              cutPathCommands.push(`M ${xStartSegment.toFixed(3)},${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+            }
           }
         }
       }

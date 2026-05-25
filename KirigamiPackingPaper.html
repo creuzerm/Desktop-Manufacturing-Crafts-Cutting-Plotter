@@ -700,8 +700,21 @@
 
                             const TL = corners[0], TR = corners[1], BR = corners[2], BL = corners[3];
                             
-                            // In stretched view, draw the rotated polygon tile boundary
-                            cuts.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)} Z`);
+                            // In stretched view, draw the rotated polygon tile boundary:
+                            // If genCreases is enabled, horizontal edges are scores (Blue), vertical edges are cuts (Red)
+                            // If genCreases is NOT enabled, all edges are cuts (Red)
+                            if (genCreases) {
+                                // Left and Right edges are cuts (Red)
+                                cuts.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)}`);
+                                cuts.push(`M ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)}`);
+                                
+                                // Top and Bottom edges are scores (Blue)
+                                scores.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${TR.x.toFixed(3)} ${TR.y.toFixed(3)}`);
+                                scores.push(`M ${BL.x.toFixed(3)} ${BL.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)}`);
+                            } else {
+                                // All edges are cuts (Red)
+                                cuts.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)} Z`);
+                            }
 
                             // Draw diagonal pop-up creases (Blue)
                             if (genCreases) {
@@ -712,7 +725,7 @@
                     }
                 } else {
                     // Flat cut ready lines: draw single slits along the grid lines
-                    // Vertical cuts along columns c = 0 ... cols
+                    // Vertical cuts along columns c = 0 ... cols (ALWAYS CUT)
                     for (let c = 0; c <= cols; c++) {
                         const x = offsetX + c * S;
                         for (let r = 0; r < rows; r++) {
@@ -724,19 +737,34 @@
                         }
                     }
 
-                    // Horizontal cuts along rows r = 0 ... rows
-                    for (let r = 0; r <= rows; r++) {
-                        const y = offsetY + r * S;
-                        for (let c = 0; c < cols; c++) {
-                            const xStartSegment = offsetX + c * S + wHinge;
-                            const xEndSegment = offsetX + (c + 1) * S - wHinge;
-                            if (xEndSegment > xStartSegment) {
-                                cuts.push(`M ${xStartSegment.toFixed(3)} ${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+                    // Horizontal grid lines r = 0 ... rows:
+                    // If 3D Pop-Up creases are enabled (genCreases), these horizontal lines are SCORES (Blue)
+                    // If 3D Pop-Up creases are NOT enabled, these horizontal lines are CUTS (Red)
+                    if (genCreases) {
+                        for (let r = 0; r <= rows; r++) {
+                            const y = offsetY + r * S;
+                            for (let c = 0; c < cols; c++) {
+                                const xStartSegment = offsetX + c * S + wHinge;
+                                const xEndSegment = offsetX + (c + 1) * S - wHinge;
+                                if (xEndSegment > xStartSegment) {
+                                    scores.push(`M ${xStartSegment.toFixed(3)} ${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+                                }
+                            }
+                        }
+                    } else {
+                        for (let r = 0; r <= rows; r++) {
+                            const y = offsetY + r * S;
+                            for (let c = 0; c < cols; c++) {
+                                const xStartSegment = offsetX + c * S + wHinge;
+                                const xEndSegment = offsetX + (c + 1) * S - wHinge;
+                                if (xEndSegment > xStartSegment) {
+                                    cuts.push(`M ${xStartSegment.toFixed(3)} ${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+                                }
                             }
                         }
                     }
 
-                    // Diagonal crease scores for 3D Pop-Up
+                    // Diagonal crease scores for 3D Pop-Up (Blue)
                     if (genCreases) {
                         for (let c = 0; c < cols; c++) {
                             for (let r = 0; r < rows; r++) {
