@@ -1,0 +1,20 @@
+[
+  {
+    "id": "shingle-maker",
+    "name": "Model Shingle Maker",
+    "description": "Parametric SVG creator to make cut files for model roof shingles. Adjust sizes, rows, shapes, and gaps.",
+    "path": "ShingleMaker.html"
+  },
+  {
+    "id": "stone-generator",
+    "name": "Stone Block Generator",
+    "description": "Parametric SVG creator for stone walls or floors using randomized Voronoi cell generation.",
+    "path": "StoneBlockGenerator.html"
+  },
+  {
+    "id": "kirigami-packing",
+    "name": "Kirigami Paper",
+    "description": "Parametric SVG creator for expandable kirigami paper packing materials based on tension-activated slit patterns.",
+    "path": "KirigamiPackingPaper.html"
+  }
+]

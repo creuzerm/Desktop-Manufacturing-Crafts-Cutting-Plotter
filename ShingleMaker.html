@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>.SVG File Model Roof Shingle Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="shared-nav.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Basic styling for the body using Inter font */
@@ -195,8 +196,9 @@
          }
     </style>
 </head>
-<body class="bg-gray-100 p-6">
-    <div class="container max-w-7xl mx-auto bg-white shadow-md rounded-lg p-8">
+<body class="bg-gray-100">
+    <div class="p-6">
+        <div class="container max-w-7xl mx-auto bg-white shadow-md rounded-lg p-8">
         <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">.SVG File Model Roof Shingle Generator</h1>
 
         <form id="generatorForm" class="mb-8">
@@ -306,6 +308,7 @@
         <button id="downloadButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline w-full">
             Generate and Download SVG
         </button>
+        </div>
     </div>
 
     <script>

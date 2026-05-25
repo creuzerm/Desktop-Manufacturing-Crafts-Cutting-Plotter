@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft Cutter SVG Generators - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <!-- Include the navigation script -->
+    <script src="shared-nav.js" defer></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+    <!-- Landing Hero Section -->
+    <header class="relative bg-slate-900 overflow-hidden text-white py-16 px-4 sm:px-6 lg:px-8 shadow-inner">
+        <!-- Abstract background pattern -->
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+        </div>
+        
+        <div class="relative max-w-5xl mx-auto text-center">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 mb-4 border border-blue-500/30">
+                Parametric Cutfiles for Cricut & Silhouette
+            </span>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-150 to-blue-200 text-transparent bg-clip-text">
+                Craft Cutter SVG Generator Suite
+            </h1>
+            <p class="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
+                Generate custom, fully parametric vector SVG files designed specifically for model building, dioramas, and crafts. Direct output with optimal cutting paths.
+            </p>
+            <div class="mt-6 flex justify-center">
+                <a href="https://www.youtube.com/@DesktopManufacturingCrafts" target="_blank" class="inline-flex items-center px-4 py-2 border border-slate-700 rounded-md shadow-sm text-sm font-medium text-slate-300 bg-slate-800/80 hover:bg-slate-800 hover:text-white transition-all">
+                    <svg class="h-5 w-5 mr-2 text-red-500 fill-current" viewBox="0 0 24 24">
+                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.507 9.388.507 9.388.507s7.518 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    YouTube Channel
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+        <!-- Search and filters -->
+        <div class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Available SVG Generators</h2>
+                <p class="text-sm text-slate-500">Select a tool below to configure and export your custom cutting patterns.</p>
+            </div>
+            <div class="relative w-full sm:w-72">
+                <input type="text" id="search-input" placeholder="Search generators..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white shadow-sm">
+                <div class="absolute left-3 top-2.5 text-slate-400">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generators Grid -->
+        <div id="generators-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Shingle Maker Card -->
+            <div class="generator-card bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col" data-name="shingle maker roof model">
+                <div class="p-6 flex-grow">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-3 bg-blue-100 rounded-lg text-blue-600">
+                            <!-- Custom shingle visual/icon -->
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">Model Shingle Maker</h3>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Design detailed sheets of miniature shingles for dollhouses, architectural models, or tabletop gaming terrain. Customize scale, shingle width, height, row spacing, and drop patterns.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Parametric</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Miniature Terrain</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Roofing</span>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-400 font-mono">ShingleMaker.html</span>
+                    <a href="ShingleMaker.html" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition-all">
+                        Launch Tool
+                        <svg class="h-4 w-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stone Block Generator Card -->
+            <div class="generator-card bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col" data-name="stone block wall floor generator voronoi">
+                <div class="p-6 flex-grow">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-3 bg-indigo-100 rounded-lg text-indigo-600">
+                            <!-- Custom stone wall/grid visual/icon -->
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">Stone Block Generator</h3>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Create realistic masonry and cobblestone patterns using a customized Voronoi diagram generator. Perfect for wall cladding, floor paving, and pathways on miniatures or model structures.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Voronoi</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Masonry</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Paving</span>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-400 font-mono">StoneBlockGenerator.html</span>
+                    <a href="StoneBlockGenerator.html" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition-all">
+                        Launch Tool
+                        <svg class="h-4 w-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Kirigami Paper Packing Card -->
+            <div class="generator-card bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col" data-name="kirigami paper packing stretch wrap cuts honeycomb">
+                <div class="p-6 flex-grow">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-3 bg-emerald-100 rounded-lg text-emerald-600">
+                            <!-- Custom kirigami/diamond grid visual/icon -->
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4a4 4 0 014 4v2m-8 0V8a4 4 0 014-4M4 10h16m-2 0v10a2 2 0 01-2 2H8a2 2 0 01-2-2V10h12z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">Kirigami Packing Paper</h3>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Design expandable, tension-activated paper wrapping structures. Ideal for creating custom shock-absorbing mesh wrap, void fill, or bidirectional rotating auxetic sheets.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Auxetic</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Honeycomb</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">Cuts & Scores</span>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-400 font-mono">KirigamiPackingPaper.html</span>
+                    <a href="KirigamiPackingPaper.html" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:border-emerald-900 focus:ring ring-emerald-300 disabled:opacity-25 transition-all">
+                        Launch Tool
+                        <svg class="h-4 w-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Tips -->
+        <section class="mt-16 bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+            <h3 class="text-xl font-bold text-slate-900 mb-4 flex items-center">
+                <svg class="h-6 w-6 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Tips for Import & Cutting
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600">
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-1">1. Keep Page Dimensions Match</h4>
+                    <p>When generating an SVG, ensure the physical height and width match your intended workpiece size. Write down these dimensions to scale the object correctly inside Cricut Design Space.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-1">2. Red vs Black Vectors</h4>
+                    <p>Some tools allow rendering helper paths or guides. When importing, you can map specific stroke colors to 'Draw/Pen' operations and others to 'Cut' operations.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-1">3. Weld/Attach in Design Space</h4>
+                    <p>After importing the SVG, remember to select all elements and click "Attach" so that the relative positions of the cut lines are preserved during the cutting process.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs">
+            <p>© 2026 Desktop Manufacturing Crafts & AI Agents. Released under MIT License.</p>
+            <p class="mt-2 text-slate-500">Designed with structural vector precision for physical fabrication.</p>
+        </div>
+    </footer>
+
+    <!-- Simple client-side search filtering -->
+    <script>
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.generator-card');
+            cards.forEach(card => {
+                const searchData = card.getAttribute('data-name') || '';
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const desc = card.querySelector('p').textContent.toLowerCase();
+                if (title.includes(query) || desc.includes(query) || searchData.includes(query)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

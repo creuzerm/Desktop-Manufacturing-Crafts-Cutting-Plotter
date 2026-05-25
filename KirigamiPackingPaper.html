@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computational Kirigami Packing Paper Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #svgPreviewContainer {
+            border: 1px solid #e5e7eb;
+            margin-top: 1rem;
+            width: 100%;
+            min-height: 400px;
+            background-color: #0f172a; /* Slate 900 for high-contrast engineering preview */
+            overflow: auto;
+            border-radius: 0.5rem;
+            resize: vertical;
+            position: relative;
+        }
+        #svgPreviewContainer svg {
+            display: block;
+            margin: auto;
+            max-width: 100%;
+            height: auto;
+            background-color: #1e293b; /* Slate 800 for the paper canvas */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #475569; /* Slate 600 */
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .input-group input, .input-group select {
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1; /* Slate 300 */
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .slider-container input[type="range"] {
+            flex-grow: 1;
+            height: 0.5rem;
+            accent-color: #3b82f6;
+        }
+        .slider-container input[type="number"] {
+            width: 4.5rem;
+            text-align: right;
+        }
+        /* Custom Tab Styles */
+        .tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+    <!-- Include the navigation script -->
+    <script src="shared-nav.js" defer></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+    <div class="p-6 flex-grow">
+        <div class="max-w-7xl mx-auto bg-white shadow-xl rounded-xl border border-slate-200 overflow-hidden">
+            <!-- Header Banner -->
+            <div class="bg-slate-900 px-8 py-6 text-white border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Computational Kirigami Packing Paper Generator</h1>
+                    <p class="text-slate-400 text-sm mt-1">Design tension-activated packaging cells and auxiliary materials based on mechanics equations.</p>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-slate-300 font-medium font-mono">TAK v1.0.0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+                <!-- Left Sidebar: Configuration Controls -->
+                <div class="lg:col-span-5 p-8 flex flex-col justify-between space-y-8">
+                    <div class="space-y-6">
+                        <!-- Paper Size Configuration -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-3">1. Paper Dimensions</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="input-group">
+                                    <label for="paperPreset">Size Preset</label>
+                                    <select id="paperPreset">
+                                        <option value="letter">US Letter (8.5" x 11")</option>
+                                        <option value="ledger">Ledger (11" x 17")</option>
+                                        <option value="mat12">Standard Mat (12" x 12")</option>
+                                        <option value="mat24">Extended Mat (12" x 24")</option>
+                                        <option value="custom" selected>Custom Size</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="input-group">
+                                        <label for="paperWidth">Width (in)</label>
+                                        <input type="number" id="paperWidth" value="12" min="2" max="48" step="0.1">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="paperHeight">Height (in)</label>
+                                        <input type="number" id="paperHeight" value="12" min="2" max="48" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pattern Selection & Parameters -->
+                        <div>
+                            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                <h3 class="text-sm font-semibold text-slate-800 uppercase tracking-wider">2. Packaging Geometry</h3>
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="geekMode" class="w-4 h-4 text-blue-605 border-slate-350 rounded focus:ring-blue-500 cursor-pointer">
+                                    <label for="geekMode" class="text-xs font-semibold text-slate-600 cursor-pointer select-none">🤓 Geek Mode</label>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div class="input-group">
+                                    <label for="patternType">Packing Cut Type</label>
+                                    <select id="patternType">
+                                        <option value="flexible">Flexible Honeycomb Wrap</option>
+                                        <option value="double">Double-Slit Array</option>
+                                        <option value="rotating-square">Rotating Square Auxetic (2D/3D)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="borderMargin">Border Margin (in)</label>
+                                    <input type="number" id="borderMargin" value="0.5" min="0" max="3" step="0.05">
+                                </div>
+                            </div>
+
+                            <!-- Simple Parameter Option -->
+                            <div id="simpleParamsGroup" class="mb-4">
+                                <div class="input-group">
+                                    <label for="meshDensity">Mesh Size & Density</label>
+                                    <select id="meshDensity">
+                                        <option value="fine">Fine / Small Mesh (Highly Flexible)</option>
+                                        <option value="standard" selected>Standard / Medium Mesh (Balanced)</option>
+                                        <option value="coarse">Coarse / Large Mesh (Stronger/Slower Stretch)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Crease Options (visible for auxetic squares) -->
+                            <div id="creaseCheckboxGroup" class="mt-3 mb-4 flex items-center space-x-2 bg-slate-50 p-2.5 rounded border border-slate-200 hidden">
+                                <input type="checkbox" id="generateCreases" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer" checked>
+                                <label for="generateCreases" class="text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                                    Include 3D Pop-Up Crease Scores (Blue vectors)
+                                </label>
+                            </div>
+
+                            <!-- Geek Parameter Sliders -->
+                            <div id="geekParamsGroup" class="hidden">
+                                <!-- 1D Slit Parameters -->
+                                <div id="paramGroup1D" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="input-group">
+                                        <label for="slitLength">Slit Length (H) (in)</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="slitLengthSlider" min="0.25" max="3" step="0.05" value="1.0">
+                                            <input type="number" id="slitLength" value="1.0" min="0.1" max="10" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="ligamentWidth">Ligament Width (L) (in)</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="ligamentWidthSlider" min="0.05" max="1.5" step="0.05" value="0.2">
+                                            <input type="number" id="ligamentWidth" value="0.2" min="0.01" max="5" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="hingeWidth">Hinge Width (W) (in)</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="hingeWidthSlider" min="0.05" max="1.5" step="0.05" value="0.15">
+                                            <input type="number" id="hingeWidth" value="0.15" min="0.01" max="5" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="verticalGap">Vertical Gap (R) (in)</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="verticalGapSlider" min="0.05" max="2" step="0.05" value="0.25">
+                                            <input type="number" id="verticalGap" value="0.25" min="0.01" max="10" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 2D Auxetic Parameters -->
+                                <div id="paramGroup2D" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+                                    <div class="input-group">
+                                        <label for="tileSize">Tile Size (S) (in)</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="tileSizeSlider" min="0.25" max="3" step="0.05" value="0.8">
+                                            <input type="number" id="tileSize" value="0.8" min="0.1" max="5" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="hingeGap">Hinge Corner Gap (g) (in)</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="hingeGapSlider" min="0.02" max="1.0" step="0.01" value="0.12">
+                                            <input type="number" id="hingeGap" value="0.12" min="0.01" max="3" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3D Simulation Controls -->
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="text-sm font-semibold text-slate-800 uppercase tracking-wider mb-3">3. Interactive 3D Tension Simulation</h3>
+                            <div class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-slate-500 uppercase">Preview Mode</span>
+                                    <div class="flex space-x-1 bg-slate-200 p-1 rounded-md text-xs">
+                                        <button id="modeFlat" class="px-3 py-1 rounded bg-white font-medium text-slate-700 shadow-sm transition-all">Flat (Cut Ready)</button>
+                                        <button id="modeStretched" class="px-3 py-1 rounded text-slate-500 hover:text-slate-700 transition-all">Stretched (3D)</button>
+                                    </div>
+                                </div>
+                                <div class="input-group" id="tensionSliderGroup" style="opacity: 0.5; pointer-events: none;">
+                                    <label for="tensionSlider" class="flex justify-between">
+                                        <span>Applied Tension Elongation</span>
+                                        <span id="tensionVal" class="font-mono text-blue-600 font-semibold">0%</span>
+                                    </label>
+                                    <input type="range" id="tensionSlider" min="0" max="100" value="0" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate and Download SVG -->
+                    <div class="pt-6 border-t border-slate-200">
+                        <button id="downloadButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 flex items-center justify-center space-x-2">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <span>Generate & Download SVG</span>
+                        </button>
+                        <p class="text-xs text-slate-400 text-center mt-2">Exported file has real-world dimensions and path colors mapping cuts (Red) & scores (Blue).</p>
+                    </div>
+                </div>
+
+                <!-- Right Canvas: Preview & Dashboard Metrics -->
+                <div class="lg:col-span-7 bg-slate-900 p-8 flex flex-col justify-between text-white">
+                    <!-- Live Stats Dashboard -->
+                    <div>
+                        <!-- Simple Calculations Group -->
+                        <div id="simpleCalculationsGroup" class="mb-6 bg-slate-800 p-4 rounded-lg border border-slate-750">
+                            <span class="block text-sm font-semibold text-slate-300">Expected Expansion Behavior:</span>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                This pattern is optimized for clean cutting and balanced structure. When fully stretched, this sheet will expand up to <span id="simpleMaxStrain" class="text-emerald-400 font-bold font-mono">--</span>% in length, reducing overall material weight by <span id="simpleSaving" class="text-amber-400 font-bold font-mono">--</span>%.
+                            </p>
+                        </div>
+
+                        <!-- Geek Calculations Group -->
+                        <div id="geekCalculationsGroup" class="hidden">
+                            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Structural Mechanics Calculations</h2>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-750">
+                                    <span class="block text-xs text-slate-400 font-medium">Max Ext. (δ_max)</span>
+                                    <span id="statMaxExt" class="text-lg font-bold text-blue-400 font-mono">0.00"</span>
+                                    <span class="block text-[10px] text-slate-500 mt-0.5">inches/cell</span>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-750">
+                                    <span class="block text-xs text-slate-400 font-medium">Max Strain (ε_max)</span>
+                                    <span id="statMaxStrain" class="text-lg font-bold text-indigo-400 font-mono">0.0%</span>
+                                    <span class="block text-[10px] text-slate-500 mt-0.5">axial limit</span>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-750">
+                                    <span class="block text-xs text-slate-400 font-medium">Expansion (R_exp)</span>
+                                    <span id="statExpRatio" class="text-lg font-bold text-emerald-400 font-mono">1.00x</span>
+                                    <span class="block text-[10px] text-slate-500 mt-0.5">volumetric footprint</span>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg border border-slate-750">
+                                    <span class="block text-xs text-slate-400 font-medium">Material Saving</span>
+                                    <span id="statSaving" class="text-lg font-bold text-amber-400 font-mono">0.0%</span>
+                                    <span class="block text-[10px] text-slate-500 mt-0.5">vs. solid sheet</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mathematical Formulas Info (Geek Mode) -->
+                        <div id="geekEquationsGroup" class="bg-slate-850 p-4 rounded-lg border border-slate-800 text-xs text-slate-400 leading-relaxed mb-6 space-y-1 hidden">
+                            <div class="font-semibold text-slate-300 flex items-center mb-1">
+                                <svg class="h-4 w-4 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                Physics Reference Equations:
+                            </div>
+                            <div id="equations1D">
+                                <div>• Maximum Extension Limit: <span class="font-mono text-slate-300">δ_max = √(H² + L²) - H</span></div>
+                                <div>• Volumetric Expansion Ratio: <span class="font-mono text-slate-300">R_exp(δ) = [(W + √(H² + L² - (H+δ)²)) / (W+L)] * [(H + R + δ) / (H + R)]</span></div>
+                            </div>
+                            <div id="equations2D" class="hidden">
+                                <div>• Poisson's Ratio (Isotropic): <span class="font-mono text-slate-300">ν = -1</span> (expands bidirectionally)</div>
+                                <div>• Area Expansion Ratio: <span class="font-mono text-slate-300">R_exp(θ) = [(S·cos(θ) + S·sin(θ) + g) / (S + g)]²</span></div>
+                                <div>• Max Elongation Limit: <span class="font-mono text-slate-300">δ_max = (√2 - 1)·S</span> (at θ = 45°)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Canvas Area -->
+                    <div class="flex-grow flex flex-col">
+                        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                            <span>Interactive Cutting Map Preview</span>
+                            <span id="canvasDimensions" class="font-mono">12.00" x 12.00"</span>
+                        </div>
+                        <div id="svgPreviewContainer">
+                            <!-- Injected SVG goes here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script logic -->
+    <script>
+        // DOM Elements
+        const paperPreset = document.getElementById('paperPreset');
+        const paperWidth = document.getElementById('paperWidth');
+        const paperHeight = document.getElementById('paperHeight');
+        const patternType = document.getElementById('patternType');
+        const borderMargin = document.getElementById('borderMargin');
+
+        const slitLength = document.getElementById('slitLength');
+        const slitLengthSlider = document.getElementById('slitLengthSlider');
+        const ligamentWidth = document.getElementById('ligamentWidth');
+        const ligamentWidthSlider = document.getElementById('ligamentWidthSlider');
+        const hingeWidth = document.getElementById('hingeWidth');
+        const hingeWidthSlider = document.getElementById('hingeWidthSlider');
+        const verticalGap = document.getElementById('verticalGap');
+        const verticalGapSlider = document.getElementById('verticalGapSlider');
+
+        // 2D Rotating Square parameters
+        const tileSize = document.getElementById('tileSize');
+        const tileSizeSlider = document.getElementById('tileSizeSlider');
+        const hingeGap = document.getElementById('hingeGap');
+        const hingeGapSlider = document.getElementById('hingeGapSlider');
+        const generateCreases = document.getElementById('generateCreases');
+
+        const paramGroup1D = document.getElementById('paramGroup1D');
+        const paramGroup2D = document.getElementById('paramGroup2D');
+        const creaseCheckboxGroup = document.getElementById('creaseCheckboxGroup');
+        const equations1D = document.getElementById('equations1D');
+        const equations2D = document.getElementById('equations2D');
+
+        const modeFlat = document.getElementById('modeFlat');
+        const modeStretched = document.getElementById('modeStretched');
+        const tensionSlider = document.getElementById('tensionSlider');
+        const tensionSliderGroup = document.getElementById('tensionSliderGroup');
+        const tensionVal = document.getElementById('tensionVal');
+
+        const statMaxExt = document.getElementById('statMaxExt');
+        const statMaxStrain = document.getElementById('statMaxStrain');
+        const statExpRatio = document.getElementById('statExpRatio');
+        const statSaving = document.getElementById('statSaving');
+        const canvasDimensions = document.getElementById('canvasDimensions');
+        const svgPreviewContainer = document.getElementById('svgPreviewContainer');
+        const downloadButton = document.getElementById('downloadButton');
+
+        // Geek mode / Simple mode DOM elements
+        const geekMode = document.getElementById('geekMode');
+        const simpleParamsGroup = document.getElementById('simpleParamsGroup');
+        const geekParamsGroup = document.getElementById('geekParamsGroup');
+        const meshDensity = document.getElementById('meshDensity');
+        const simpleCalculationsGroup = document.getElementById('simpleCalculationsGroup');
+        const geekCalculationsGroup = document.getElementById('geekCalculationsGroup');
+        const geekEquationsGroup = document.getElementById('geekEquationsGroup');
+        const simpleMaxStrain = document.getElementById('simpleMaxStrain');
+        const simpleSaving = document.getElementById('simpleSaving');
+
+        // State Variables
+        let isStretchedMode = false;
+        const MM_PER_INCH = 25.4;
+        const SCREEN_SCALE = 35; // Pixels per inch in preview window
+
+        // Preset configurations
+        const presets = {
+            letter: { w: 8.5, h: 11 },
+            ledger: { w: 11, h: 17 },
+            mat12: { w: 12, h: 12 },
+            mat24: { w: 12, h: 24 }
+        };
+
+        // Initialize listeners
+        setupSliderSync(slitLength, slitLengthSlider);
+        setupSliderSync(ligamentWidth, ligamentWidthSlider);
+        setupSliderSync(hingeWidth, hingeWidthSlider);
+        setupSliderSync(verticalGap, verticalGapSlider);
+        setupSliderSync(tileSize, tileSizeSlider);
+        setupSliderSync(hingeGap, hingeGapSlider);
+
+        paperPreset.addEventListener('change', () => {
+            const val = paperPreset.value;
+            if (presets[val]) {
+                paperWidth.value = presets[val].w;
+                paperHeight.value = presets[val].h;
+                paperWidth.disabled = true;
+                paperHeight.disabled = true;
+            } else {
+                paperWidth.disabled = false;
+                paperHeight.disabled = false;
+            }
+            updateAll();
+        });
+
+        [paperWidth, paperHeight, patternType, borderMargin, generateCreases].forEach(el => {
+            if (el) el.addEventListener('input', () => {
+                if (el === patternType) {
+                    updateParameterVisibility();
+                    applyMeshPreset();
+                } else {
+                    updateAll();
+                }
+            });
+        });
+
+        modeFlat.addEventListener('click', () => {
+            isStretchedMode = false;
+            modeFlat.classList.add('bg-white', 'text-slate-700', 'shadow-sm');
+            modeFlat.classList.remove('text-slate-500');
+            modeStretched.classList.remove('bg-white', 'text-slate-700', 'shadow-sm');
+            modeStretched.classList.add('text-slate-500');
+            
+            tensionSliderGroup.style.opacity = '0.5';
+            tensionSliderGroup.style.pointerEvents = 'none';
+            tensionSlider.value = 0;
+            tensionVal.innerText = '0%';
+            updateAll();
+        });
+
+        modeStretched.addEventListener('click', () => {
+            isStretchedMode = true;
+            modeStretched.classList.add('bg-white', 'text-slate-700', 'shadow-sm');
+            modeStretched.classList.remove('text-slate-500');
+            modeFlat.classList.remove('bg-white', 'text-slate-700', 'shadow-sm');
+            modeFlat.classList.add('text-slate-500');
+            
+            tensionSliderGroup.style.opacity = '1';
+            tensionSliderGroup.style.pointerEvents = 'auto';
+            updateAll();
+        });
+
+        tensionSlider.addEventListener('input', () => {
+            tensionVal.innerText = tensionSlider.value + '%';
+            updateAll();
+        });
+
+        downloadButton.addEventListener('click', downloadSVG);
+
+        // Mesh presets configuration
+        const meshPresets = {
+            fine: { h: 0.5, l: 0.1, w: 0.08, r: 0.12 },
+            standard: { h: 1.0, l: 0.2, w: 0.15, r: 0.25 },
+            coarse: { h: 1.5, l: 0.3, w: 0.2, r: 0.4 }
+        };
+
+        const meshPresets2D = {
+            fine: { s: 0.5, g: 0.08 },
+            standard: { s: 0.8, g: 0.12 },
+            coarse: { s: 1.2, g: 0.18 }
+        };
+
+        // Geek Mode toggle listener
+        geekMode.addEventListener('change', () => {
+            updateParameterVisibility();
+            if (!geekMode.checked) {
+                applyMeshPreset();
+            }
+        });
+
+        // Simple Mode presets listener
+        meshDensity.addEventListener('change', applyMeshPreset);
+
+        function applyMeshPreset() {
+            const density = meshDensity.value;
+            const is2D = patternType.value === 'rotating-square';
+
+            if (is2D) {
+                const config = meshPresets2D[density];
+                if (config) {
+                    tileSize.value = config.s;
+                    tileSizeSlider.value = config.s;
+                    hingeGap.value = config.g;
+                    hingeGapSlider.value = config.g;
+                }
+            } else {
+                const config = meshPresets[density];
+                if (config) {
+                    slitLength.value = config.h;
+                    slitLengthSlider.value = config.h;
+                    ligamentWidth.value = config.l;
+                    ligamentWidthSlider.value = config.l;
+                    hingeWidth.value = config.w;
+                    hingeWidthSlider.value = config.w;
+                    verticalGap.value = config.r;
+                    verticalGapSlider.value = config.r;
+                }
+            }
+            updateAll();
+        }
+
+        // Auto Sync Slider and Number fields
+        function setupSliderSync(numberInput, sliderInput) {
+            numberInput.addEventListener('input', () => {
+                sliderInput.value = numberInput.value;
+                updateAll();
+            });
+            sliderInput.addEventListener('input', () => {
+                numberInput.value = sliderInput.value;
+                updateAll();
+            });
+        }
+
+        function updateParameterVisibility() {
+            const isGeek = geekMode.checked;
+            const is2D = patternType.value === 'rotating-square';
+
+            if (isGeek) {
+                simpleParamsGroup.classList.add('hidden');
+                geekParamsGroup.classList.remove('hidden');
+                simpleCalculationsGroup.classList.add('hidden');
+                geekCalculationsGroup.classList.remove('hidden');
+                geekEquationsGroup.classList.remove('hidden');
+
+                if (is2D) {
+                    paramGroup1D.classList.add('hidden');
+                    paramGroup2D.classList.remove('hidden');
+                    equations1D.classList.add('hidden');
+                    equations2D.classList.remove('hidden');
+                } else {
+                    paramGroup1D.classList.remove('hidden');
+                    paramGroup2D.classList.add('hidden');
+                    equations1D.classList.remove('hidden');
+                    equations2D.classList.add('hidden');
+                }
+            } else {
+                simpleParamsGroup.classList.remove('hidden');
+                geekParamsGroup.classList.add('hidden');
+                simpleCalculationsGroup.classList.remove('hidden');
+                geekCalculationsGroup.classList.add('hidden');
+                geekEquationsGroup.classList.add('hidden');
+            }
+
+            // Show/hide creases option for rotating-square (always visible/adjustable)
+            if (is2D) {
+                creaseCheckboxGroup.classList.remove('hidden');
+            } else {
+                creaseCheckboxGroup.classList.add('hidden');
+            }
+        }
+
+        function getRotatedSquareCorners(xc, yc, S, phi) {
+            const cosVal = Math.cos(phi);
+            const sinVal = Math.sin(phi);
+            const halfS = S / 2;
+            
+            return [
+                { x: xc - halfS * cosVal + halfS * sinVal, y: yc - halfS * sinVal - halfS * cosVal }, // TL
+                { x: xc + halfS * cosVal + halfS * sinVal, y: yc + halfS * sinVal - halfS * cosVal }, // TR
+                { x: xc + halfS * cosVal - halfS * sinVal, y: yc + halfS * sinVal + halfS * cosVal }, // BR
+                { x: xc - halfS * cosVal - halfS * sinVal, y: yc - halfS * sinVal + halfS * cosVal }  // BL
+            ];
+        }
+
+        // Calculation Mechanics
+        function calculateTAKMetrics() {
+            const is2D = patternType.value === 'rotating-square';
+            const pct = parseFloat(tensionSlider.value) / 100.0;
+
+            if (is2D) {
+                const S = parseFloat(tileSize.value) || 0.8;
+                const g = parseFloat(hingeGap.value) || 0.12;
+
+                const deltaMax = (Math.sqrt(2) - 1) * S;
+                const maxStrain = (deltaMax / (S + g)) * 100;
+
+                const theta = pct * (Math.PI / 4); // Max 45 degrees rotation
+                
+                const expandedPitch = S * Math.cos(theta) + S * Math.sin(theta) + g;
+                const originalPitch = S + g;
+                const expRatio = Math.pow(expandedPitch / originalPitch, 2);
+
+                const materialSaving = (1 - (1 / expRatio)) * 100;
+                const currentDelta = deltaMax * pct;
+
+                return {
+                    deltaMax,
+                    maxStrain,
+                    expRatio,
+                    materialSaving,
+                    currentDelta
+                };
+            } else {
+                const H = parseFloat(slitLength.value) || 0.5;
+                const L = parseFloat(ligamentWidth.value) || 0.1;
+                const W = parseFloat(hingeWidth.value) || 0.1;
+                const R = parseFloat(verticalGap.value) || 0.1;
+
+                const deltaMax = Math.sqrt(H*H + L*L) - H;
+                const maxStrain = (deltaMax / (H + R)) * 100;
+                
+                const currentDelta = deltaMax * pct;
+
+                const widthTermNum = W + Math.sqrt(Math.max(0, H*H + L*L - Math.pow(H + currentDelta, 2)));
+                const widthTermDen = W + L;
+                const heightTermNum = H + R + currentDelta;
+                const heightTermDen = H + R;
+                const expRatio = (widthTermNum / widthTermDen) * (heightTermNum / heightTermDen);
+
+                const materialSaving = (1 - (1 / expRatio)) * 100;
+
+                return {
+                    deltaMax,
+                    maxStrain,
+                    expRatio,
+                    materialSaving,
+                    currentDelta
+                };
+            }
+        }
+
+        // Main Update Loop
+        function updateAll() {
+            const metrics = calculateTAKMetrics();
+            
+            // Update UI metrics displays
+            statMaxExt.innerText = metrics.deltaMax.toFixed(3) + '"';
+            statMaxStrain.innerText = metrics.maxStrain.toFixed(1) + '%';
+            statExpRatio.innerText = metrics.expRatio.toFixed(2) + 'x';
+            statSaving.innerText = metrics.materialSaving.toFixed(1) + '%';
+            
+            if (simpleMaxStrain) simpleMaxStrain.innerText = metrics.maxStrain.toFixed(0);
+            if (simpleSaving) simpleSaving.innerText = metrics.materialSaving.toFixed(0);
+            
+            const w = parseFloat(paperWidth.value) || 12;
+            const h = parseFloat(paperHeight.value) || 12;
+            canvasDimensions.innerText = w.toFixed(2) + '" x ' + h.toFixed(2) + '"';
+
+            // Rebuild Preview SVG
+            generatePreview(w, h, metrics);
+        }
+
+        // Generate the SVG code for both preview and export
+        function generateSVGContent(w, h, metrics, targetMode) {
+            const margin = parseFloat(borderMargin.value) || 0.5;
+            const pattern = patternType.value;
+
+            const useStretched = (targetMode === 'stretched');
+            const pct = useStretched ? (parseFloat(tensionSlider.value) / 100.0) : 0;
+
+            let cuts = [];
+            let scores = [];
+
+            if (pattern === 'rotating-square') {
+                const S = parseFloat(tileSize.value) || 0.8;
+                const g = parseFloat(hingeGap.value) || 0.12;
+                const genCreases = generateCreases.checked;
+
+                const pitch = S + g;
+                const activeW = w - (margin * 2);
+                const activeH = h - (margin * 2);
+
+                const cols = Math.floor(activeW / pitch);
+                const rows = Math.floor(activeH / pitch);
+
+                // Center grid
+                const offsetX = margin + (activeW - (cols * pitch)) / 2;
+                const offsetY = margin + (activeH - (rows * pitch)) / 2;
+
+                const theta = pct * (Math.PI / 4); // Max 45 degrees
+                const pitchStretched = S * Math.cos(theta) + S * Math.sin(theta) + g;
+
+                for (let c = 0; c < cols; c++) {
+                    for (let r = 0; r < rows; r++) {
+                        let xc = offsetX + c * pitch + g/2 + S/2;
+                        let yc = offsetY + r * pitch + g/2 + S/2;
+
+                        if (useStretched) {
+                            const centerActiveX = offsetX + (cols * pitch) / 2;
+                            const centerActiveY = offsetY + (rows * pitch) / 2;
+
+                            xc = centerActiveX + (c - (cols - 1) / 2) * pitchStretched;
+                            yc = centerActiveY + (r - (rows - 1) / 2) * pitchStretched;
+                        }
+
+                        // Bounds check
+                        if (xc - S/2 < margin || xc + S/2 > w - margin || yc - S/2 < margin || yc + S/2 > h - margin) {
+                            continue;
+                        }
+
+                        const phi = ((c + r) % 2 === 1) ? theta : -theta;
+                        const corners = getRotatedSquareCorners(xc, yc, S, phi);
+
+                        const TL = corners[0], TR = corners[1], BR = corners[2], BL = corners[3];
+                        
+                        // Flat vs Stretched rendering
+                        if (useStretched) {
+                            // In stretched view, draw the rotated polygon tile boundary
+                            cuts.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)} Z`);
+                        } else {
+                            // Flat cut ready lines (as separate path segments)
+                            const xStart = xc - S/2;
+                            const xEnd = xc + S/2;
+                            const yStart = yc - S/2;
+                            const yEnd = yc + S/2;
+
+                            cuts.push(`M ${xStart.toFixed(3)} ${yStart.toFixed(3)} h ${S.toFixed(3)}`);
+                            cuts.push(`M ${xStart.toFixed(3)} ${yEnd.toFixed(3)} h ${S.toFixed(3)}`);
+                            cuts.push(`M ${xStart.toFixed(3)} ${yStart.toFixed(3)} v ${S.toFixed(3)}`);
+                            cuts.push(`M ${xEnd.toFixed(3)} ${yStart.toFixed(3)} v ${S.toFixed(3)}`);
+                        }
+
+                        // Draw diagonal pop-up creases (Blue)
+                        if (genCreases) {
+                            scores.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)}`);
+                            scores.push(`M ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)}`);
+                        }
+                    }
+                }
+            } else {
+                const H = parseFloat(slitLength.value) || 0.5;
+                const L = parseFloat(ligamentWidth.value) || 0.1;
+                const W = parseFloat(hingeWidth.value) || 0.1;
+                const R = parseFloat(verticalGap.value) || 0.1;
+                const d = metrics.deltaMax * pct;
+
+                // Calculations for cell layouts
+                const cellHeight = H + R;
+                const cellWidth = L + W;
+                
+                // Stretched multipliers
+                const scaleY = (cellHeight + d) / cellHeight;
+                
+                // Printable area boundaries
+                const activeW = w - (margin * 2);
+                const activeH = h - (margin * 2);
+
+                const cols = Math.floor(activeW / cellWidth) + 1;
+                const rows = Math.floor(activeH / cellHeight) + 2;
+
+                // Pattern builder for 1D staggered slits
+                for (let c = 0; c < cols; c++) {
+                    const x = margin + c * cellWidth;
+                    if (x > w - margin) continue;
+
+                    for (let r = -1; r <= rows; r++) {
+                        const stagger = (c % 2 === 1) ? (cellHeight / 2) : 0;
+                        let y = margin + (r * cellHeight) + stagger;
+
+                        if (useStretched) {
+                            y = margin + ((r * cellHeight) + stagger) * scaleY;
+                        }
+
+                        const cutStartY = y;
+                        const cutEndY = y + H;
+                        
+                        if (cutStartY > h - margin || cutEndY < margin) continue;
+
+                        const finalStartY = Math.max(margin, Math.min(h - margin, cutStartY));
+                        const finalEndY = Math.max(margin, Math.min(h - margin, cutEndY));
+
+                        if (finalStartY === finalEndY) continue;
+
+                        if (pattern === 'flexible') {
+                            if (useStretched && pct > 0.02) {
+                                const midY = (finalStartY + finalEndY) / 2;
+                                const stretchOffset = L * pct * 0.45;
+                                cuts.push(`M ${x} ${finalStartY} Q ${x - stretchOffset} ${midY} ${x} ${finalEndY} Q ${x + stretchOffset} ${midY} ${x} ${finalStartY}`);
+                            } else {
+                                cuts.push(`M ${x} ${finalStartY} L ${x} ${finalEndY}`);
+                            }
+                        } else if (pattern === 'double') {
+                            const doubleGap = Math.min(L * 0.15, 0.05);
+                            const x1 = x - doubleGap;
+                            const x2 = x + doubleGap;
+                            
+                            if (useStretched && pct > 0.02) {
+                                const midY = (finalStartY + finalEndY) / 2;
+                                const stretchOffset = L * pct * 0.35;
+                                cuts.push(`M ${x1} ${finalStartY} Q ${x1 - stretchOffset} ${midY} ${x1} ${finalEndY} Q ${x1 + stretchOffset} ${midY} ${x1} ${finalStartY}`);
+                                cuts.push(`M ${x2} ${finalStartY} Q ${x2 - stretchOffset} ${midY} ${x2} ${finalEndY} Q ${x2 + stretchOffset} ${midY} ${x2} ${finalStartY}`);
+                            } else {
+                                cuts.push(`M ${x1} ${finalStartY} L ${x1} ${finalEndY}`);
+                                cuts.push(`M ${x2} ${finalStartY} L ${x2} ${finalEndY}`);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Generate Path Elements
+            let pathsHtml = '';
+            
+            // Draw cuts (Red)
+            if (cuts.length > 0) {
+                pathsHtml += `<path d="${cuts.join(' ')}" stroke="#ef4444" stroke-width="0.02" fill="none" />\n`;
+            }
+            
+            // Draw scores (Blue)
+            if (scores.length > 0) {
+                pathsHtml += `<path d="${scores.join(' ')}" stroke="#3b82f6" stroke-width="0.015" fill="none" />\n`;
+            }
+
+            // Outer boundary layout helper box (Light gray/dotted)
+            const marginSize = margin;
+            pathsHtml += `<rect x="${marginSize}" y="${marginSize}" width="${w - marginSize*2}" height="${h - marginSize*2}" stroke="#64748b" stroke-dasharray="0.1" stroke-width="0.01" fill="none" />`;
+
+            return {
+                width: w,
+                height: h,
+                xml: `<svg width="${w}in" height="${h}in" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">\n${pathsHtml}\n</svg>`
+            };
+        }
+
+        // Render preview inside page canvas container
+        function generatePreview(w, h, metrics) {
+            const targetMode = isStretchedMode ? 'stretched' : 'flat';
+            const svgData = generateSVGContent(w, h, metrics, targetMode);
+            
+            // Add grid scaling wrapper to responsive preview
+            const scale = SCREEN_SCALE;
+            const svgContent = svgData.xml
+                .replace('<svg ', `<svg style="width: ${w * scale}px; height: ${h * scale}px;" `);
+
+            svgPreviewContainer.innerHTML = svgContent;
+        }
+
+        // Download SVG cutfile triggers
+        function downloadSVG() {
+            const metrics = calculateTAKMetrics();
+            const w = parseFloat(paperWidth.value) || 12;
+            const h = parseFloat(paperHeight.value) || 12;
+            
+            // Always export in Flat mode to ensure physical cut-readiness
+            const svgData = generateSVGContent(w, h, metrics, 'flat');
+
+            const blob = new Blob([svgData.xml], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kirigami-packing-paper-${w}x${h}.svg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Run on bootstrap
+        applyMeshPreset();
+    </script>
+</body>
+</html>
