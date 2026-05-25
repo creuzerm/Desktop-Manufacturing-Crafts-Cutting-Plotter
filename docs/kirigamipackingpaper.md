@@ -234,25 +234,49 @@ class KirigamiSVGGenerator {
         colIndex++;
       }
     } else if (this.patternType === "2D-auxetic-squares") {
-      const pitch = this.tileSize + this.hingeGap;
+      const activeW = this.canvasWidth - (this.margin * 2);
+      const activeH = this.canvasHeight - (this.margin * 2);
+      const cols = Math.floor(activeW / this.tileSize);
+      const rows = Math.floor(activeH / this.tileSize);
 
-      for (let x = this.margin; x + pitch <= this.canvasWidth - this.margin; x += pitch) {
-        for (let y = this.margin; y + pitch <= this.canvasHeight - this.margin; y += pitch) {
-          const xStart = x + this.hingeGap / 2;
-          const xEnd = xStart + this.tileSize;
-          const yStart = y + this.hingeGap / 2;
-          const yEnd = yStart + this.tileSize;
+      const offsetX = this.margin + (activeW - (cols * this.tileSize)) / 2;
+      const offsetY = this.margin + (activeH - (rows * this.tileSize)) / 2;
 
-          // Horizontal cuts (Top & Bottom of rotating tile)
-          cutPathCommands.push(`M ${xStart.toFixed(3)},${yStart.toFixed(3)} h ${this.tileSize.toFixed(3)}`);
-          cutPathCommands.push(`M ${xStart.toFixed(3)},${yEnd.toFixed(3)} h ${this.tileSize.toFixed(3)}`);
+      const wHinge = this.hingeGap / 2;
 
-          // Vertical cuts (Left & Right of rotating tile)
-          cutPathCommands.push(`M ${xStart.toFixed(3)},${yStart.toFixed(3)} v ${this.tileSize.toFixed(3)}`);
-          cutPathCommands.push(`M ${xEnd.toFixed(3)},${yStart.toFixed(3)} v ${this.tileSize.toFixed(3)}`);
+      // Vertical cuts along vertical grid lines
+      for (let c = 0; c <= cols; c++) {
+        const x = offsetX + c * this.tileSize;
+        for (let r = 0; r < rows; r++) {
+          const yStartSegment = offsetY + r * this.tileSize + wHinge;
+          const yEndSegment = offsetY + (r + 1) * this.tileSize - wHinge;
+          if (yEndSegment > yStartSegment) {
+            cutPathCommands.push(`M ${x.toFixed(3)},${yStartSegment.toFixed(3)} V ${yEndSegment.toFixed(3)}`);
+          }
+        }
+      }
 
-          // Add diagonal score lines for 3D Pop-Up transformation
-          if (this.generateCreases) {
+      // Horizontal cuts along horizontal grid lines
+      for (let r = 0; r <= rows; r++) {
+        const y = offsetY + r * this.tileSize;
+        for (let c = 0; c < cols; c++) {
+          const xStartSegment = offsetX + c * this.tileSize + wHinge;
+          const xEndSegment = offsetX + (c + 1) * this.tileSize - wHinge;
+          if (xEndSegment > xStartSegment) {
+            cutPathCommands.push(`M ${xStartSegment.toFixed(3)},${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+          }
+        }
+      }
+
+      // Add diagonal score lines for 3D Pop-Up transformation
+      if (this.generateCreases) {
+        for (let c = 0; c < cols; c++) {
+          for (let r = 0; r < rows; r++) {
+            const xStart = offsetX + c * this.tileSize;
+            const xEnd = offsetX + (c + 1) * this.tileSize;
+            const yStart = offsetY + r * this.tileSize;
+            const yEnd = offsetY + (r + 1) * this.tileSize;
+
             creasePathCommands.push(`M ${xStart.toFixed(3)},${yStart.toFixed(3)} L ${xEnd.toFixed(3)},${yEnd.toFixed(3)}`);
             creasePathCommands.push(`M ${xEnd.toFixed(3)},${yStart.toFixed(3)} L ${xStart.toFixed(3)},${yEnd.toFixed(3)}`);
           }

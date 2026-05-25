@@ -305,7 +305,7 @@
                             </div>
                             <div id="equations2D" class="hidden">
                                 <div>• Poisson's Ratio (Isotropic): <span class="font-mono text-slate-300">ν = -1</span> (expands bidirectionally)</div>
-                                <div>• Area Expansion Ratio: <span class="font-mono text-slate-300">R_exp(θ) = [(S·cos(θ) + S·sin(θ) + g) / (S + g)]²</span></div>
+                                <div>• Area Expansion Ratio: <span class="font-mono text-slate-300">R_exp(θ) = [cos(θ) + sin(θ)]² = 1 + sin(2θ)</span></div>
                                 <div>• Max Elongation Limit: <span class="font-mono text-slate-300">δ_max = (√2 - 1)·S</span> (at θ = 45°)</div>
                             </div>
                         </div>
@@ -586,12 +586,12 @@
                 const g = parseFloat(hingeGap.value) || 0.12;
 
                 const deltaMax = (Math.sqrt(2) - 1) * S;
-                const maxStrain = (deltaMax / (S + g)) * 100;
+                const maxStrain = (deltaMax / S) * 100;
 
                 const theta = pct * (Math.PI / 4); // Max 45 degrees rotation
                 
-                const expandedPitch = S * Math.cos(theta) + S * Math.sin(theta) + g;
-                const originalPitch = S + g;
+                const expandedPitch = S * (Math.cos(theta) + Math.sin(theta));
+                const originalPitch = S;
                 const expRatio = Math.pow(expandedPitch / originalPitch, 2);
 
                 const materialSaving = (1 - (1 / expRatio)) * 100;
@@ -670,64 +670,84 @@
                 const g = parseFloat(hingeGap.value) || 0.12;
                 const genCreases = generateCreases.checked;
 
-                const pitch = S + g;
                 const activeW = w - (margin * 2);
                 const activeH = h - (margin * 2);
 
-                const cols = Math.floor(activeW / pitch);
-                const rows = Math.floor(activeH / pitch);
+                // Grid size of squares with side length S.
+                const cols = Math.floor(activeW / S);
+                const rows = Math.floor(activeH / S);
 
                 // Center grid
-                const offsetX = margin + (activeW - (cols * pitch)) / 2;
-                const offsetY = margin + (activeH - (rows * pitch)) / 2;
+                const offsetX = margin + (activeW - (cols * S)) / 2;
+                const offsetY = margin + (activeH - (rows * S)) / 2;
 
-                const theta = pct * (Math.PI / 4); // Max 45 degrees
-                const pitchStretched = S * Math.cos(theta) + S * Math.sin(theta) + g;
+                const wHinge = g / 2;
 
-                for (let c = 0; c < cols; c++) {
-                    for (let r = 0; r < rows; r++) {
-                        let xc = offsetX + c * pitch + g/2 + S/2;
-                        let yc = offsetY + r * pitch + g/2 + S/2;
+                if (useStretched) {
+                    const theta = pct * (Math.PI / 4); // Max 45 degrees
+                    const pitchStretched = S * (Math.cos(theta) + Math.sin(theta));
 
-                        if (useStretched) {
-                            const centerActiveX = offsetX + (cols * pitch) / 2;
-                            const centerActiveY = offsetY + (rows * pitch) / 2;
+                    const centerActiveX = offsetX + (cols * S) / 2;
+                    const centerActiveY = offsetY + (rows * S) / 2;
 
-                            xc = centerActiveX + (c - (cols - 1) / 2) * pitchStretched;
-                            yc = centerActiveY + (r - (rows - 1) / 2) * pitchStretched;
-                        }
+                    for (let c = 0; c < cols; c++) {
+                        for (let r = 0; r < rows; r++) {
+                            const xc = centerActiveX + (c - (cols - 1) / 2) * pitchStretched;
+                            const yc = centerActiveY + (r - (rows - 1) / 2) * pitchStretched;
 
-                        // Bounds check
-                        if (xc - S/2 < margin || xc + S/2 > w - margin || yc - S/2 < margin || yc + S/2 > h - margin) {
-                            continue;
-                        }
+                            const phi = ((c + r) % 2 === 1) ? theta : -theta;
+                            const corners = getRotatedSquareCorners(xc, yc, S, phi);
 
-                        const phi = ((c + r) % 2 === 1) ? theta : -theta;
-                        const corners = getRotatedSquareCorners(xc, yc, S, phi);
-
-                        const TL = corners[0], TR = corners[1], BR = corners[2], BL = corners[3];
-                        
-                        // Flat vs Stretched rendering
-                        if (useStretched) {
+                            const TL = corners[0], TR = corners[1], BR = corners[2], BL = corners[3];
+                            
                             // In stretched view, draw the rotated polygon tile boundary
                             cuts.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)} Z`);
-                        } else {
-                            // Flat cut ready lines (as separate path segments)
-                            const xStart = xc - S/2;
-                            const xEnd = xc + S/2;
-                            const yStart = yc - S/2;
-                            const yEnd = yc + S/2;
 
-                            cuts.push(`M ${xStart.toFixed(3)} ${yStart.toFixed(3)} h ${S.toFixed(3)}`);
-                            cuts.push(`M ${xStart.toFixed(3)} ${yEnd.toFixed(3)} h ${S.toFixed(3)}`);
-                            cuts.push(`M ${xStart.toFixed(3)} ${yStart.toFixed(3)} v ${S.toFixed(3)}`);
-                            cuts.push(`M ${xEnd.toFixed(3)} ${yStart.toFixed(3)} v ${S.toFixed(3)}`);
+                            // Draw diagonal pop-up creases (Blue)
+                            if (genCreases) {
+                                scores.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)}`);
+                                scores.push(`M ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)}`);
+                            }
                         }
+                    }
+                } else {
+                    // Flat cut ready lines: draw single slits along the grid lines
+                    // Vertical cuts along columns c = 0 ... cols
+                    for (let c = 0; c <= cols; c++) {
+                        const x = offsetX + c * S;
+                        for (let r = 0; r < rows; r++) {
+                            const yStartSegment = offsetY + r * S + wHinge;
+                            const yEndSegment = offsetY + (r + 1) * S - wHinge;
+                            if (yEndSegment > yStartSegment) {
+                                cuts.push(`M ${x.toFixed(3)} ${yStartSegment.toFixed(3)} V ${yEndSegment.toFixed(3)}`);
+                            }
+                        }
+                    }
 
-                        // Draw diagonal pop-up creases (Blue)
-                        if (genCreases) {
-                            scores.push(`M ${TL.x.toFixed(3)} ${TL.y.toFixed(3)} L ${BR.x.toFixed(3)} ${BR.y.toFixed(3)}`);
-                            scores.push(`M ${TR.x.toFixed(3)} ${TR.y.toFixed(3)} L ${BL.x.toFixed(3)} ${BL.y.toFixed(3)}`);
+                    // Horizontal cuts along rows r = 0 ... rows
+                    for (let r = 0; r <= rows; r++) {
+                        const y = offsetY + r * S;
+                        for (let c = 0; c < cols; c++) {
+                            const xStartSegment = offsetX + c * S + wHinge;
+                            const xEndSegment = offsetX + (c + 1) * S - wHinge;
+                            if (xEndSegment > xStartSegment) {
+                                cuts.push(`M ${xStartSegment.toFixed(3)} ${y.toFixed(3)} H ${xEndSegment.toFixed(3)}`);
+                            }
+                        }
+                    }
+
+                    // Diagonal crease scores for 3D Pop-Up
+                    if (genCreases) {
+                        for (let c = 0; c < cols; c++) {
+                            for (let r = 0; r < rows; r++) {
+                                const xStart = offsetX + c * S;
+                                const xEnd = offsetX + (c + 1) * S;
+                                const yStart = offsetY + r * S;
+                                const yEnd = offsetY + (r + 1) * S;
+
+                                scores.push(`M ${xStart.toFixed(3)} ${yStart.toFixed(3)} L ${xEnd.toFixed(3)} ${yEnd.toFixed(3)}`);
+                                scores.push(`M ${xEnd.toFixed(3)} ${yStart.toFixed(3)} L ${xStart.toFixed(3)} ${yEnd.toFixed(3)}`);
+                            }
                         }
                     }
                 }
