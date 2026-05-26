@@ -133,13 +133,20 @@
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                                 <div class="input-group">
                                     <label for="patternType">Packing Cut Type</label>
                                     <select id="patternType">
                                         <option value="flexible">Flexible Honeycomb Wrap</option>
-                                        <option value="double">Double-Slit Array</option>
+                                        <option value="i-slit">Staggered I-Slit</option>
                                         <option value="rotating-square">Rotating Square Auxetic (2D/3D)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="patternOrientation">Orientation</label>
+                                    <select id="patternOrientation">
+                                        <option value="vertical" selected>Vertical Cuts (Horiz. Stretch)</option>
+                                        <option value="horizontal">Horizontal Cuts (Vert. Stretch)</option>
                                     </select>
                                 </div>
                                 <div class="input-group">
@@ -303,6 +310,10 @@
                                 <div>• Maximum Extension Limit: <span class="font-mono text-slate-300">δ_max = √(H² + L²) - H</span></div>
                                 <div>• Volumetric Expansion Ratio: <span class="font-mono text-slate-300">R_exp(δ) = [(W + √(H² + L² - (H+δ)²)) / (W+L)] * [(H + R + δ) / (H + R)]</span></div>
                             </div>
+                            <div id="equationsISlit" class="hidden">
+                                <div>• Maximum Extension Limit: <span class="font-mono text-slate-300">δ_max = √(L² + H²) - H</span></div>
+                                <div>• Volumetric Expansion Ratio: <span class="font-mono text-slate-300">R_exp(δ) = (H + δ) / H</span></div>
+                            </div>
                             <div id="equations2D" class="hidden">
                                 <div>• Poisson's Ratio (Isotropic): <span class="font-mono text-slate-300">ν = -1</span> (expands bidirectionally)</div>
                                 <div>• Area Expansion Ratio: <span class="font-mono text-slate-300">R_exp(θ) = [cos(θ) + sin(θ)]² = 1 + sin(2θ)</span></div>
@@ -333,6 +344,7 @@
         const paperWidth = document.getElementById('paperWidth');
         const paperHeight = document.getElementById('paperHeight');
         const patternType = document.getElementById('patternType');
+        const patternOrientation = document.getElementById('patternOrientation');
         const borderMargin = document.getElementById('borderMargin');
 
         const slitLength = document.getElementById('slitLength');
@@ -355,6 +367,7 @@
         const paramGroup2D = document.getElementById('paramGroup2D');
         const creaseCheckboxGroup = document.getElementById('creaseCheckboxGroup');
         const equations1D = document.getElementById('equations1D');
+        const equationsISlit = document.getElementById('equationsISlit');
         const equations2D = document.getElementById('equations2D');
 
         const modeFlat = document.getElementById('modeFlat');
@@ -417,9 +430,9 @@
             updateAll();
         });
 
-        [paperWidth, paperHeight, patternType, borderMargin, generateCreases].forEach(el => {
+        [paperWidth, paperHeight, patternType, patternOrientation, borderMargin, generateCreases].forEach(el => {
             if (el) el.addEventListener('input', () => {
-                if (el === patternType) {
+                if (el === patternType || el === patternOrientation) {
                     updateParameterVisibility();
                     applyMeshPreset();
                 } else {
@@ -474,6 +487,12 @@
             coarse: { s: 1.2, g: 0.18 }
         };
 
+        const meshPresetsISlit = {
+            fine: { l: 0.5, h: 0.25, hs: 0.2, w: 0.1 },
+            standard: { l: 1.0, h: 0.5, hs: 0.4, w: 0.2 },
+            coarse: { l: 1.5, h: 0.75, hs: 0.6, w: 0.3 }
+        };
+
         // Geek Mode toggle listener
         geekMode.addEventListener('change', () => {
             updateParameterVisibility();
@@ -487,15 +506,27 @@
 
         function applyMeshPreset() {
             const density = meshDensity.value;
-            const is2D = patternType.value === 'rotating-square';
+            const pattern = patternType.value;
 
-            if (is2D) {
+            if (pattern === 'rotating-square') {
                 const config = meshPresets2D[density];
                 if (config) {
                     tileSize.value = config.s;
                     tileSizeSlider.value = config.s;
                     hingeGap.value = config.g;
                     hingeGapSlider.value = config.g;
+                }
+            } else if (pattern === 'i-slit') {
+                const config = meshPresetsISlit[density];
+                if (config) {
+                    slitLength.value = config.l;
+                    slitLengthSlider.value = config.l;
+                    ligamentWidth.value = config.h;
+                    ligamentWidthSlider.value = config.h;
+                    hingeWidth.value = config.hs;
+                    hingeWidthSlider.value = config.hs;
+                    verticalGap.value = config.w;
+                    verticalGapSlider.value = config.w;
                 }
             } else {
                 const config = meshPresets[density];
@@ -527,7 +558,50 @@
 
         function updateParameterVisibility() {
             const isGeek = geekMode.checked;
-            const is2D = patternType.value === 'rotating-square';
+            const pattern = patternType.value;
+            const is2D = pattern === 'rotating-square';
+            const isISlit = pattern === 'i-slit';
+            const orientation = patternOrientation.value;
+
+            // Show/hide orientation selector parent based on pattern type
+            if (is2D) {
+                patternOrientation.parentElement.classList.add('hidden');
+            } else {
+                patternOrientation.parentElement.classList.remove('hidden');
+            }
+
+            // Update label texts for sliders dynamically
+            const labelSlitLength = document.querySelector('label[for="slitLength"]');
+            const labelLigamentWidth = document.querySelector('label[for="ligamentWidth"]');
+            const labelHingeWidth = document.querySelector('label[for="hingeWidth"]');
+            const labelVerticalGap = document.querySelector('label[for="verticalGap"]');
+
+            if (isISlit) {
+                if (orientation === 'vertical') {
+                    if (labelSlitLength) labelSlitLength.innerText = 'Vertical Slit Length (L) (in)';
+                    if (labelLigamentWidth) labelLigamentWidth.innerText = 'Column Spacing (H) (in)';
+                    if (labelHingeWidth) labelHingeWidth.innerText = 'Horizontal Cut Length (in)';
+                    if (labelVerticalGap) labelVerticalGap.innerText = 'Vertical Gap (W) (in)';
+                } else {
+                    if (labelSlitLength) labelSlitLength.innerText = 'Horizontal Slit Length (L) (in)';
+                    if (labelLigamentWidth) labelLigamentWidth.innerText = 'Row Spacing (H) (in)';
+                    if (labelHingeWidth) labelHingeWidth.innerText = 'Vertical Cut Length (in)';
+                    if (labelVerticalGap) labelVerticalGap.innerText = 'Horizontal Gap (W) (in)';
+                }
+            } else {
+                // Honeycomb wrap
+                if (orientation === 'vertical') {
+                    if (labelSlitLength) labelSlitLength.innerText = 'Slit Length (H) (in)';
+                    if (labelLigamentWidth) labelLigamentWidth.innerText = 'Ligament Width (L) (in)';
+                    if (labelHingeWidth) labelHingeWidth.innerText = 'Hinge Width (W) (in)';
+                    if (labelVerticalGap) labelVerticalGap.innerText = 'Vertical Gap (R) (in)';
+                } else {
+                    if (labelSlitLength) labelSlitLength.innerText = 'Slit Width (H) (in)';
+                    if (labelLigamentWidth) labelLigamentWidth.innerText = 'Ligament Height (L) (in)';
+                    if (labelHingeWidth) labelHingeWidth.innerText = 'Hinge Height (W) (in)';
+                    if (labelVerticalGap) labelVerticalGap.innerText = 'Horizontal Gap (R) (in)';
+                }
+            }
 
             if (isGeek) {
                 simpleParamsGroup.classList.add('hidden');
@@ -540,11 +614,19 @@
                     paramGroup1D.classList.add('hidden');
                     paramGroup2D.classList.remove('hidden');
                     equations1D.classList.add('hidden');
+                    equationsISlit.classList.add('hidden');
                     equations2D.classList.remove('hidden');
+                } else if (isISlit) {
+                    paramGroup1D.classList.remove('hidden');
+                    paramGroup2D.classList.add('hidden');
+                    equations1D.classList.add('hidden');
+                    equationsISlit.classList.remove('hidden');
+                    equations2D.classList.add('hidden');
                 } else {
                     paramGroup1D.classList.remove('hidden');
                     paramGroup2D.classList.add('hidden');
                     equations1D.classList.remove('hidden');
+                    equationsISlit.classList.add('hidden');
                     equations2D.classList.add('hidden');
                 }
             } else {
@@ -555,9 +637,13 @@
                 geekEquationsGroup.classList.add('hidden');
             }
 
-            // Show/hide creases option for rotating-square (always visible/adjustable)
-            if (is2D) {
+            // Show creases option for rotating-square AND i-slit
+            if (is2D || isISlit) {
                 creaseCheckboxGroup.classList.remove('hidden');
+                const creaseLabel = creaseCheckboxGroup.querySelector('label');
+                if (creaseLabel) {
+                    creaseLabel.innerText = 'Include 3D Pop-Up Crease Scores (Blue vectors)';
+                }
             } else {
                 creaseCheckboxGroup.classList.add('hidden');
             }
@@ -578,7 +664,9 @@
 
         // Calculation Mechanics
         function calculateTAKMetrics() {
-            const is2D = patternType.value === 'rotating-square';
+            const pattern = patternType.value;
+            const is2D = pattern === 'rotating-square';
+            const isISlit = pattern === 'i-slit';
             const pct = parseFloat(tensionSlider.value) / 100.0;
 
             if (is2D) {
@@ -596,6 +684,25 @@
 
                 const materialSaving = (1 - (1 / expRatio)) * 100;
                 const currentDelta = deltaMax * pct;
+
+                return {
+                    deltaMax,
+                    maxStrain,
+                    expRatio,
+                    materialSaving,
+                    currentDelta
+                };
+            } else if (isISlit) {
+                const L = parseFloat(slitLength.value) || 1.0;
+                const H = parseFloat(ligamentWidth.value) || 0.5;
+                const W = parseFloat(verticalGap.value) || 0.2;
+
+                const deltaMax = Math.sqrt(L*L + H*H) - H;
+                const maxStrain = (deltaMax / H) * 100;
+                const currentDelta = deltaMax * pct;
+
+                const expRatio = (H + currentDelta) / H;
+                const materialSaving = (1 - (1 / expRatio)) * 100;
 
                 return {
                     deltaMax,
@@ -780,70 +887,204 @@
                     }
                 }
             } else {
-                const H = parseFloat(slitLength.value) || 0.5;
-                const L = parseFloat(ligamentWidth.value) || 0.1;
-                const W = parseFloat(hingeWidth.value) || 0.1;
-                const R = parseFloat(verticalGap.value) || 0.1;
-                const d = metrics.deltaMax * pct;
+                const orientation = patternOrientation.value;
+                const isHorizontal = (orientation === 'horizontal');
+                const isISlit = (pattern === 'i-slit');
 
-                // Calculations for cell layouts
-                const cellHeight = H + R;
-                const cellWidth = L + W;
-                
-                // Stretched multipliers
-                const scaleY = (cellHeight + d) / cellHeight;
-                
-                // Printable area boundaries
-                const activeW = w - (margin * 2);
-                const activeH = h - (margin * 2);
+                const gridW = isHorizontal ? h : w;
+                const gridH = isHorizontal ? w : h;
 
-                const cols = Math.floor(activeW / cellWidth) + 1;
-                const rows = Math.floor(activeH / cellHeight) + 2;
+                // Path helpers with rotation
+                const addCutLine = (x1, y1, x2, y2) => {
+                    const clipX = (val) => Math.max(margin, Math.min(gridW - margin, val));
+                    const clipY = (val) => Math.max(margin, Math.min(gridH - margin, val));
+                    const cx1 = clipX(x1), cy1 = clipY(y1);
+                    const cx2 = clipX(x2), cy2 = clipY(y2);
+                    if (cx1 === cx2 && cy1 === cy2) return;
+                    if (isHorizontal) {
+                        cuts.push(`M ${cy1.toFixed(3)} ${cx1.toFixed(3)} L ${cy2.toFixed(3)} ${cx2.toFixed(3)}`);
+                    } else {
+                        cuts.push(`M ${cx1.toFixed(3)} ${cy1.toFixed(3)} L ${cx2.toFixed(3)} ${cy2.toFixed(3)}`);
+                    }
+                };
 
-                // Pattern builder for 1D staggered slits
-                for (let c = 0; c < cols; c++) {
-                    const x = margin + c * cellWidth;
-                    if (x > w - margin) continue;
+                const addCutBezier = (x1, y1, cx, cy, x2, y2) => {
+                    const clipX = (val) => Math.max(margin, Math.min(gridW - margin, val));
+                    const clipY = (val) => Math.max(margin, Math.min(gridH - margin, val));
+                    const cx1 = clipX(x1), cy1 = clipY(y1);
+                    const ccx = clipX(cx), ccy = clipY(cy);
+                    const cx2 = clipX(x2), cy2 = clipY(y2);
+                    if (cx1 === cx2 && cy1 === cy2) return;
+                    if (isHorizontal) {
+                        cuts.push(`M ${cy1.toFixed(3)} ${cx1.toFixed(3)} Q ${ccy.toFixed(3)} ${ccx.toFixed(3)} ${cy2.toFixed(3)} ${cx2.toFixed(3)}`);
+                    } else {
+                        cuts.push(`M ${cx1.toFixed(3)} ${cy1.toFixed(3)} Q ${ccx.toFixed(3)} ${ccy.toFixed(3)} ${cx2.toFixed(3)} ${cy2.toFixed(3)}`);
+                    }
+                };
 
-                    for (let r = -1; r <= rows; r++) {
-                        const stagger = (c % 2 === 1) ? (cellHeight / 2) : 0;
-                        let y = margin + (r * cellHeight) + stagger;
+                const addScoreLine = (x1, y1, x2, y2) => {
+                    const clipX = (val) => Math.max(margin, Math.min(gridW - margin, val));
+                    const clipY = (val) => Math.max(margin, Math.min(gridH - margin, val));
+                    const cx1 = clipX(x1), cy1 = clipY(y1);
+                    const cx2 = clipX(x2), cy2 = clipY(y2);
+                    if (cx1 === cx2 && cy1 === cy2) return;
+                    if (isHorizontal) {
+                        scores.push(`M ${cy1.toFixed(3)} ${cx1.toFixed(3)} L ${cy2.toFixed(3)} ${cx2.toFixed(3)}`);
+                    } else {
+                        scores.push(`M ${cx1.toFixed(3)} ${cy1.toFixed(3)} L ${cx2.toFixed(3)} ${cy2.toFixed(3)}`);
+                    }
+                };
 
+                if (isISlit) {
+                    const L_cut = parseFloat(slitLength.value) || 1.0;
+                    const H_col = parseFloat(ligamentWidth.value) || 0.5;
+                    const H_slit = parseFloat(hingeWidth.value) || 0.4;
+                    const W_gap = parseFloat(verticalGap.value) || 0.2;
+                    const d = metrics.currentDelta;
+                    const genCreases = generateCreases.checked;
+
+                    const cellHeight = L_cut + W_gap;
+                    const cellWidth = H_col;
+
+                    const activeW = gridW - (margin * 2);
+                    const activeH = gridH - (margin * 2);
+
+                    const cols = Math.floor(activeW / cellWidth) + 1;
+                    const rows = Math.floor(activeH / cellHeight) + 2;
+
+                    // Compute all cell coordinates
+                    let gridCells = [];
+                    for (let c = 0; c < cols; c++) {
+                        let x = margin + c * cellWidth;
                         if (useStretched) {
-                            y = margin + ((r * cellHeight) + stagger) * scaleY;
+                            const centerX = gridW / 2;
+                            x = centerX + (c - (cols - 1) / 2) * (cellWidth + d);
                         }
 
-                        const cutStartY = y;
-                        const cutEndY = y + H;
-                        
-                        if (cutStartY > h - margin || cutEndY < margin) continue;
+                        gridCells[c] = [];
+                        for (let r = -1; r <= rows; r++) {
+                            const stagger = (c % 2 === 1) ? (cellHeight / 2) : 0;
+                            const y = margin + (r * cellHeight) + stagger;
+                            gridCells[c].push({ x, y });
+                        }
+                    }
 
-                        const finalStartY = Math.max(margin, Math.min(h - margin, cutStartY));
-                        const finalEndY = Math.max(margin, Math.min(h - margin, cutEndY));
+                    // Draw cuts
+                    for (let c = 0; c < cols; c++) {
+                        for (let r = 0; r < gridCells[c].length; r++) {
+                            const cell = gridCells[c][r];
+                            const x = cell.x;
+                            const y_c = cell.y;
+                            const y_top = y_c + L_cut / 2;
+                            const y_bottom = y_c - L_cut / 2;
 
-                        if (finalStartY === finalEndY) continue;
+                            if (useStretched && pct > 0.02) {
+                                const dx_top = d * 0.5;
+                                const dx_mid = d * 0.9;
 
-                        if (pattern === 'flexible') {
+                                const xl_top = x - dx_top / 2;
+                                const xr_top = x + dx_top / 2;
+                                const xl_mid = x - dx_mid / 2;
+                                const xr_mid = x + dx_mid / 2;
+
+                                // Draw left/right Beziers for main slit
+                                addCutBezier(xl_top, y_top, xl_mid, y_c, xl_top, y_bottom);
+                                addCutBezier(xr_top, y_top, xr_mid, y_c, xr_top, y_bottom);
+
+                                // Draw split horizontal cuts
+                                addCutLine(x - dx_top / 2 - H_slit / 2, y_top, x - dx_top / 2, y_top);
+                                addCutLine(x + dx_top / 2, y_top, x + dx_top / 2 + H_slit / 2, y_top);
+                                addCutLine(x - dx_top / 2 - H_slit / 2, y_bottom, x - dx_top / 2, y_bottom);
+                                addCutLine(x + dx_top / 2, y_bottom, x + dx_top / 2 + H_slit / 2, y_bottom);
+                            } else {
+                                // Flat cut: single vertical and two horizontal lines
+                                addCutLine(x, y_bottom, x, y_top);
+                                addCutLine(x - H_slit / 2, y_top, x + H_slit / 2, y_top);
+                                addCutLine(x - H_slit / 2, y_bottom, x + H_slit / 2, y_bottom);
+                            }
+                        }
+                    }
+
+                    // Draw optional crease lines
+                    if (genCreases) {
+                        for (let c = 0; c < cols - 1; c++) {
+                            for (let r = 0; r < gridCells[c].length; r++) {
+                                const cell = gridCells[c][r];
+                                const x_curr = cell.x;
+                                const y_c = cell.y;
+                                const y_top = y_c + L_cut / 2;
+                                const y_bottom = y_c - L_cut / 2;
+
+                                const x_next = gridCells[c+1][0].x; // next column x
+
+                                // Find adjacent cells in column c+1
+                                // Stagger difference is cellHeight / 2
+                                const y_adj1_c = y_c - cellHeight / 2; // lower adjacent center
+                                const y_adj2_c = y_c + cellHeight / 2; // higher adjacent center
+
+                                const y_adj1_t = y_adj1_c + L_cut / 2;
+                                const y_adj2_b = y_adj2_c - L_cut / 2;
+
+                                if (useStretched && pct > 0.02) {
+                                    const dx_top = d * 0.5;
+                                    // Connect right split of current to left split of next column
+                                    addScoreLine(x_curr + dx_top / 2, y_bottom, x_next - dx_top / 2, y_adj1_t);
+                                    addScoreLine(x_curr + dx_top / 2, y_top, x_next - dx_top / 2, y_adj2_b);
+                                } else {
+                                    addScoreLine(x_curr, y_bottom, x_next, y_adj1_t);
+                                    addScoreLine(x_curr, y_top, x_next, y_adj2_b);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Flexible Honeycomb Wrap
+                    const H = parseFloat(slitLength.value) || 0.5;
+                    const L = parseFloat(ligamentWidth.value) || 0.1;
+                    const W = parseFloat(hingeWidth.value) || 0.1;
+                    const R = parseFloat(verticalGap.value) || 0.1;
+                    const d = metrics.deltaMax * pct;
+
+                    const cellHeight = H + R;
+                    const cellWidth = L + W;
+
+                    const scaleY = (cellHeight + d) / cellHeight;
+
+                    const activeW = gridW - (margin * 2);
+                    const activeH = gridH - (margin * 2);
+
+                    const cols = Math.floor(activeW / cellWidth) + 1;
+                    const rows = Math.floor(activeH / cellHeight) + 2;
+
+                    for (let c = 0; c < cols; c++) {
+                        const x = margin + c * cellWidth;
+                        if (x > gridW - margin) continue;
+
+                        for (let r = -1; r <= rows; r++) {
+                            const stagger = (c % 2 === 1) ? (cellHeight / 2) : 0;
+                            let y = margin + (r * cellHeight) + stagger;
+
+                            if (useStretched) {
+                                y = margin + ((r * cellHeight) + stagger) * scaleY;
+                            }
+
+                            const cutStartY = y;
+                            const cutEndY = y + H;
+
+                            if (cutStartY > gridH - margin || cutEndY < margin) continue;
+
+                            const finalStartY = Math.max(margin, Math.min(gridH - margin, cutStartY));
+                            const finalEndY = Math.max(margin, Math.min(gridH - margin, cutEndY));
+
+                            if (finalStartY === finalEndY) continue;
+
                             if (useStretched && pct > 0.02) {
                                 const midY = (finalStartY + finalEndY) / 2;
                                 const stretchOffset = L * pct * 0.45;
-                                cuts.push(`M ${x} ${finalStartY} Q ${x - stretchOffset} ${midY} ${x} ${finalEndY} Q ${x + stretchOffset} ${midY} ${x} ${finalStartY}`);
+                                addCutBezier(x, finalStartY, x - stretchOffset, midY, x, finalEndY);
+                                addCutBezier(x, finalEndY, x + stretchOffset, midY, x, finalStartY);
                             } else {
-                                cuts.push(`M ${x} ${finalStartY} L ${x} ${finalEndY}`);
-                            }
-                        } else if (pattern === 'double') {
-                            const doubleGap = Math.min(L * 0.15, 0.05);
-                            const x1 = x - doubleGap;
-                            const x2 = x + doubleGap;
-                            
-                            if (useStretched && pct > 0.02) {
-                                const midY = (finalStartY + finalEndY) / 2;
-                                const stretchOffset = L * pct * 0.35;
-                                cuts.push(`M ${x1} ${finalStartY} Q ${x1 - stretchOffset} ${midY} ${x1} ${finalEndY} Q ${x1 + stretchOffset} ${midY} ${x1} ${finalStartY}`);
-                                cuts.push(`M ${x2} ${finalStartY} Q ${x2 - stretchOffset} ${midY} ${x2} ${finalEndY} Q ${x2 + stretchOffset} ${midY} ${x2} ${finalStartY}`);
-                            } else {
-                                cuts.push(`M ${x1} ${finalStartY} L ${x1} ${finalEndY}`);
-                                cuts.push(`M ${x2} ${finalStartY} L ${x2} ${finalEndY}`);
+                                addCutLine(x, finalStartY, x, finalEndY);
                             }
                         }
                     }

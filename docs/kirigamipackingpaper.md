@@ -113,10 +113,13 @@ Single-Slit Pattern:
 ---   ---   ---   ---
   ---   ---   ---   ---
 
-Double-Slit Pattern (Multi-Slit):
-  ===   ===   ===   ===
-===   ===   ===   ===
-  ===   ===   ===   ===
+Staggered I-Slit Pattern:
+  +-+   +-+   +-+   +-+
+  |     |     |     |
+  +-+   +-+   +-+   +-+
+      +-+   +-+   +-+
+      |     |     |
+      +-+   +-+   +-+
 
 Rotating Square Auxetic (2D/3D Bidirectional):
   ┌─┐ ┌─┐ ┌─┐ ┌─┐
@@ -128,9 +131,9 @@ Rotating Square Auxetic (2D/3D Bidirectional):
 
 The classical single-slit pattern consists of uniform linear cuts arranged in an offset grid. While highly efficient to cut, this pattern concentrates stress at the terminal ends of each slit. This stress concentration makes the material prone to tear propagation when fully deployed, limiting its use with lower-grade or recycled paper fibers. Additionally, when wrapped around objects, single-slit patterns exhibit weak layer-to-layer mechanical interlocking, which can cause the wrap to unspool unless secured with adhesive tape.
 
-### Multi-Slit Configurations
+### Staggered I-Slit Pattern
 
-The multi-slit pattern replaces each single vertical cut with duplicate, closely spaced parallel slits separated by a small gap ($R$) along the tension axis. The most common configuration is the double-slit pattern, though triple and quadruple-slit arrays are also utilized. This design decouples the active deformation zones of adjacent rows, allowing the material to form undulating ribbons that twist out of the plane of the sheet. These undulating ribbons create loops that mechanically interlock with adjacent wrap layers, preventing the wrapped packaging from unspooling without the need for adhesive tape.
+The Staggered I-Slit pattern consists of vertical cuts terminated at both ends by perpendicular horizontal caps. This configuration partitions the sheet into continuous vertical ribbons connected by horizontal paper bridges (ligaments). Under tension, the vertical cuts open horizontally into a hexagonal mesh, and the horizontal cuts allow the vertical ribbons to rotate and deform out-of-plane. This creates a high-volume interlocking structure that grips onto adjacent layers of paper, eliminating the need for adhesive tape or glue when wrapping items.
 
 ### Multi-Beam Structural Enhancements
 
@@ -179,36 +182,40 @@ For the 3D pop-up variant, the generator outputs a separate, color-coded compoun
 class KirigamiSVGGenerator {
   /**
    * @param {Object} config - Configuration parameters (all physical sizes in mm)
-   * @param {number} config.canvasWidth - Total width of paper sheet (W_c)
-   * @param {number} config.canvasHeight - Total height of paper sheet (H_c)
-   * @param {number} config.margin - Border safety margin where no cuts occur (B_d)
-   * @param {string} config.patternType - "1D-staggered" or "2D-auxetic-squares"
+   * @param {number} config.canvasWidth - Total width of paper sheet
+   * @param {number} config.canvasHeight - Total height of paper sheet
+   * @param {number} config.margin - Border safety margin where no cuts occur
+   * @param {string} config.patternType - "1D-staggered", "i-slit", or "2D-auxetic-squares"
+   * @param {string} config.orientation - "vertical" or "horizontal" (for 1D and i-slit patterns)
    *
-   * // 1D Staggered Cut parameters:
-   * @param {number} config.slitLength - Vertical cut length (H)
-   * @param {number} config.gap - Vertical uncut spacing between collinear cuts (R)
-   * @param {number} config.colSpacing - Horizontal spacing between cut columns (L)
+   * // 1D Staggered and I-Slit parameters:
+   * @param {number} config.slitLength - Main vertical/horizontal cut length (L or H)
+   * @param {number} config.gap - Collinear uncut spacing between cuts (W or R)
+   * @param {number} config.colSpacing - Spacing between cut columns/rows (H or L)
+   * @param {number} config.horizSlitLength - Perpendicular cap cut length (for i-slit)
    *
    * // 2D/3D Rotating Square Auxetic parameters:
    * @param {number} config.tileSize - Side length of rotating squares (S)
    * @param {number} config.hingeGap - Corner gap width between adjacent tiles (g)
-   * @param {boolean} config.generateCreases - Generate diagonal score lines for 3D pop-up
+   * @param {boolean} config.generateCreases - Generate crease scores (blue vectors) for 3D pop-up
    */
   constructor(config = {}) {
     this.canvasWidth = config.canvasWidth || 280;
     this.canvasHeight = config.canvasHeight || 280;
     this.margin = config.margin || 15;
-    this.patternType = config.patternType || "2D-auxetic-squares";
+    this.patternType = config.patternType || "1D-staggered";
+    this.orientation = config.orientation || "vertical";
 
-    // 1D Staggered Slit Parameters
-    this.slitLength = config.slitLength || 20;
-    this.gap = config.gap || 4;
-    this.colSpacing = config.colSpacing || 5;
+    // 1D Staggered and I-Slit Parameters
+    this.slitLength = config.slitLength || 25;
+    this.gap = config.gap || 5;
+    this.colSpacing = config.colSpacing || 12;
+    this.horizSlitLength = config.horizSlitLength || 10;
 
     // 2D/3D Auxetic Parameters
     this.tileSize = config.tileSize || 15;
     this.hingeGap = config.hingeGap || 3;
-    this.generateCreases = config.generateCreases!== false;
+    this.generateCreases = config.generateCreases !== false;
   }
 
   /**
@@ -216,22 +223,107 @@ class KirigamiSVGGenerator {
    * @returns {string} Fully structured, valid SVG XML markup
    */
   generateSVGString() {
-    let cutPathCommands =;
-    let creasePathCommands =;
+    let cutPathCommands = [];
+    let creasePathCommands = [];
+
+    const isHorizontal = (this.orientation === "horizontal");
+    const gridW = isHorizontal ? this.canvasHeight : this.canvasWidth;
+    const gridH = isHorizontal ? this.canvasWidth : this.canvasHeight;
+
+    const addCutLine = (x1, y1, x2, y2) => {
+      const clipX = (val) => Math.max(this.margin, Math.min(gridW - this.margin, val));
+      const clipY = (val) => Math.max(this.margin, Math.min(gridH - this.margin, val));
+      const cx1 = clipX(x1), cy1 = clipY(y1);
+      const cx2 = clipX(x2), cy2 = clipY(y2);
+      if (cx1 === cx2 && cy1 === cy2) return;
+      if (isHorizontal) {
+        cutPathCommands.push(`M ${cy1.toFixed(3)},${cx1.toFixed(3)} L ${cy2.toFixed(3)},${cx2.toFixed(3)}`);
+      } else {
+        cutPathCommands.push(`M ${cx1.toFixed(3)},${cy1.toFixed(3)} L ${cx2.toFixed(3)},${cy2.toFixed(3)}`);
+      }
+    };
+
+    const addScoreLine = (x1, y1, x2, y2) => {
+      const clipX = (val) => Math.max(this.margin, Math.min(gridW - this.margin, val));
+      const clipY = (val) => Math.max(this.margin, Math.min(gridH - this.margin, val));
+      const cx1 = clipX(x1), cy1 = clipY(y1);
+      const cx2 = clipX(x2), cy2 = clipY(y2);
+      if (cx1 === cx2 && cy1 === cy2) return;
+      if (isHorizontal) {
+        creasePathCommands.push(`M ${cy1.toFixed(3)},${cx1.toFixed(3)} L ${cy2.toFixed(3)},${cx2.toFixed(3)}`);
+      } else {
+        creasePathCommands.push(`M ${cx1.toFixed(3)},${cy1.toFixed(3)} L ${cx2.toFixed(3)},${cy2.toFixed(3)}`);
+      }
+    };
 
     if (this.patternType === "1D-staggered") {
       const stepY = this.slitLength + this.gap;
       const halfStepY = stepY / 2;
       let colIndex = 0;
 
-      for (let x = this.margin; x <= this.canvasWidth - this.margin; x += this.colSpacing) {
+      for (let x = this.margin; x <= gridW - this.margin; x += this.colSpacing) {
         const staggerShift = (colIndex % 2) * halfStepY;
         let y = this.margin + staggerShift;
-        while (y + this.slitLength <= this.canvasHeight - this.margin) {
-          cutPathCommands.push(`M ${x.toFixed(3)},${y.toFixed(3)} v ${this.slitLength.toFixed(3)}`);
+        while (y + this.slitLength <= gridH - this.margin) {
+          addCutLine(x, y, x, y + this.slitLength);
           y += stepY;
         }
         colIndex++;
+      }
+    } else if (this.patternType === "i-slit") {
+      const cellHeight = this.slitLength + this.gap;
+      const cellWidth = this.colSpacing;
+
+      const activeW = gridW - (this.margin * 2);
+      const activeH = gridH - (this.margin * 2);
+
+      const cols = Math.floor(activeW / cellWidth) + 1;
+      const rows = Math.floor(activeH / cellHeight) + 2;
+
+      let gridCells = [];
+      for (let c = 0; c < cols; c++) {
+        let x = this.margin + c * cellWidth;
+        gridCells[c] = [];
+        for (let r = -1; r <= rows; r++) {
+          const stagger = (c % 2 === 1) ? (cellHeight / 2) : 0;
+          const y = this.margin + (r * cellHeight) + stagger;
+          gridCells[c].push({ x, y });
+        }
+      }
+
+      // Draw cuts
+      for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < gridCells[c].length; r++) {
+          const cell = gridCells[c][r];
+          const x = cell.x;
+          const y_c = cell.y;
+          const y_top = y_c + this.slitLength / 2;
+          const y_bottom = y_c - this.slitLength / 2;
+
+          addCutLine(x, y_bottom, x, y_top);
+          addCutLine(x - this.horizSlitLength / 2, y_top, x + this.horizSlitLength / 2, y_top);
+          addCutLine(x - this.horizSlitLength / 2, y_bottom, x + this.horizSlitLength / 2, y_bottom);
+        }
+      }
+
+      // Draw optional creases
+      if (this.generateCreases) {
+        for (let c = 0; c < cols - 1; c++) {
+          for (let r = 0; r < gridCells[c].length; r++) {
+            const cell = gridCells[c][r];
+            const x_curr = cell.x;
+            const y_c = cell.y;
+            const y_top = y_c + this.slitLength / 2;
+            const y_bottom = y_c - this.slitLength / 2;
+
+            const x_next = gridCells[c+1][0].x;
+            const y_adj1_c = y_c - cellHeight / 2;
+            const y_adj2_c = y_c + cellHeight / 2;
+
+            addScoreLine(x_curr, y_bottom, x_next, y_adj1_c + this.slitLength / 2);
+            addScoreLine(x_curr, y_top, x_next, y_adj2_c - this.slitLength / 2);
+          }
+        }
       }
     } else if (this.patternType === "2D-auxetic-squares") {
       const activeW = this.canvasWidth - (this.margin * 2);
@@ -257,8 +349,6 @@ class KirigamiSVGGenerator {
       }
 
       // Horizontal grid lines r = 0 ... rows:
-      // If 3D Pop-Up creases are enabled (this.generateCreases), these horizontal lines are SCORES (creasePathCommands)
-      // If 3D Pop-Up creases are NOT enabled, these horizontal lines are CUTS (cutPathCommands)
       if (this.generateCreases) {
         for (let r = 0; r <= rows; r++) {
           const y = offsetY + r * this.tileSize;
@@ -299,12 +389,12 @@ class KirigamiSVGGenerator {
       }
     }
 
-    const cutCompoundPath = cutPathCommands.join(" ");
-    const creaseCompoundPath = creasePathCommands.join(" ");
+    // Combine paths
+    let cutCompoundPath = cutPathCommands.join(" ");
+    let creaseCompoundPath = creasePathCommands.join(" ");
 
     let scoreLayer = "";
     if (this.generateCreases && creasePathCommands.length > 0) {
-      // Blue lines represent creases (to be assigned as Score in cutting software)
       scoreLayer = `\n  <path d="${creaseCompoundPath}" fill="none" stroke="#0000FF" stroke-width="0.1" stroke-dasharray="1,1" />`;
     }
 
